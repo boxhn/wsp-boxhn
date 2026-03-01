@@ -4,20 +4,20 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${WUZAPI_PORT:-8080}:8080"
+      - "8080:8080"
     environment:
-      - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN}
-      - WUZAPI_GLOBAL_ENCRYPTION_KEY=${WUZAPI_GLOBAL_ENCRYPTION_KEY}
-      - WUZAPI_GLOBAL_HMAC_KEY=${WUZAPI_GLOBAL_HMAC_KEY:-}
-      - WUZAPI_GLOBAL_WEBHOOK=${WUZAPI_GLOBAL_WEBHOOK:-}
-      - DB_USER=${DB_USER:-wuzapi}
-      - DB_PASSWORD=${DB_PASSWORD:-wuzapi}
-      - DB_NAME=${DB_NAME:-wuzapi}
+      - WUZAPI_ADMIN_TOKEN=vqKLr3OjUSja7q
+      - WUZAPI_GLOBAL_ENCRYPTION_KEY=QyDFxBfi7mZ4aq2htENn1L9As6J5PudV
+      - WUZAPI_GLOBAL_HMAC_KEY=wLW9lV5jbd8X1g4IipazUNZAHfuq2GsR
+      - WUZAPI_GLOBAL_WEBHOOK=
+      - DB_USER=wuzapi
+      - DB_PASSWORD=wuzapi
+      - DB_NAME=wuzapi
       - DB_HOST=db
-      - DB_PORT=${DB_PORT:-5432}
-      - TZ=${TZ:-America/Sao_Paulo}
-      - WEBHOOK_FORMAT=${WEBHOOK_FORMAT:-json}
-      - SESSION_DEVICE_NAME=${SESSION_DEVICE_NAME:-WuzAPI}
+      - DB_PORT=5432
+      - TZ=America/Tegucigalpa
+      - WEBHOOK_FORMAT=json
+      - SESSION_DEVICE_NAME=WspBox
       # RabbitMQ configuration Optional
       - RABBITMQ_URL=amqp://wuzapi:wuzapi@rabbitmq:5672/
       - RABBITMQ_QUEUE=whatsapp_events
@@ -33,9 +33,9 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${DB_USER:-wuzapi}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-wuzapi}
-      POSTGRES_DB: ${DB_NAME:-wuzapi}
+      POSTGRES_USER: wuzapi
+      POSTGRES_PASSWORD: wuzapi
+      POSTGRES_DB: wuzapi
     # ports:
     #   - "${DB_PORT:-5432}:5432" # Uncomment to access the database directly from your host machine.
     volumes:

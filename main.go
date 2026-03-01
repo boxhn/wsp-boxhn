@@ -21,7 +21,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/patrickmn/go-cache"
 	"github.com/rs/zerolog"
@@ -171,11 +170,6 @@ func main() {
 			log.Fatal().Err(err).Msgf("Failed to parse CIDR string: %s", cidr)
 		}
 		privateIPBlocks = append(privateIPBlocks, block)
-	}
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Warn().Err(err).Msg("It was not possible to load the .env file (it may not exist).")
 	}
 
 	flag.Parse()
