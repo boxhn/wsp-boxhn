@@ -174,6 +174,8 @@ func main() {
 
 	flag.Parse()
 
+	var err error
+
 	// Check for address in environment variable if flag is default or empty
 	if *address == "0.0.0.0" || *address == "" {
 		if v := os.Getenv("WUZAPI_ADDRESS"); v != "" {
