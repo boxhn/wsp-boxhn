@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WuzAPI - Chat History</title>
+  <title>WSPBOX - Historial de Chat</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.css">
   <link rel="stylesheet" href="css/app.css">
   <style>
@@ -290,22 +290,22 @@
 <div class="ui modal" id="loginModal">
   <div class="header">
     <i class="lock icon"></i>
-    Authentication Required
+    Autenticación Requerida
   </div>
   <div class="content">
     <div class="ui form">
       <div class="field">
-        <label>Access Token</label>
-        <input type="password" id="tokenInput" placeholder="Enter your user token or admin token">
+        <label>Token de Acceso</label>
+        <input type="password" id="tokenInput" placeholder="Ingresa tu token de usuario o admin">
         <div class="ui info message">
-          <p>This page requires authentication. Please enter your user token or admin token to continue.</p>
+          <p>Esta página requiere autenticación. Por favor ingresa tu token de usuario o admin para continuar.</p>
         </div>
       </div>
     </div>
   </div>
   <div class="actions">
-    <div class="ui cancel button">Cancel</div>
-    <div class="ui primary button" id="loginBtn">Login</div>
+    <div class="ui cancel button">Cancelar</div>
+    <div class="ui primary button" id="loginBtn">Iniciar Sesión</div>
   </div>
 </div>
 
@@ -314,20 +314,20 @@
     <div class="sidebar-header">
       <h3 onclick="refreshPage()">
         <i class="history icon"></i>
-        Chat History
+        Historial de Chat
       </h3>
     </div>
     
     <div class="instance-selector">
-      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Instance:</label>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Instancia:</label>
       <select class="ui fluid dropdown" id="instanceSelect">
-        <option value="">Select an instance...</option>
+        <option value="">Seleccionar una instancia...</option>
       </select>
     </div>
     
     <div class="chat-list" id="chatList">
       <div class="ui message">
-        <p>Select an instance to view chats</p>
+        <p>Selecciona una instancia para ver los chats</p>
       </div>
     </div>
   </div>
@@ -343,8 +343,8 @@
     
     <div class="chat-messages" id="chatMessages">
       <div class="no-selection" style="padding: 40px; text-align: center; color: #666; font-size: 14px;">
-        <div style="margin-bottom: 10px; font-weight: 600;">Chat History Viewer</div>
-        <p style="margin: 0;">Select a chat on the left to see the entries and json for them.</p>
+        <div style="margin-bottom: 10px; font-weight: 600;">Visor de Historial de Chat</div>
+        <p style="margin: 0;">Selecciona un chat a la izquierda para ver las entradas y JSON de ellos.</p>
       </div>
     </div>
   </div>

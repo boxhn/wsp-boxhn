@@ -37,6 +37,8 @@ scripts/
 .windsurfrules
 NEW_FEATS.md
 
+.history/
+
 *.code-workspace
 **/*.code-workspace
 .vscode/workspaceStorage/
