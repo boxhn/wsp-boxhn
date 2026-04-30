@@ -78,6 +78,5 @@ networks:
 
 volumes:
   db_data:
-    external: true
   rabbitmq_data:
   app_dbdata:
