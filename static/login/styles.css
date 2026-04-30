@@ -29,20 +29,43 @@ body {
     margin: 0 auto !important;
 }
 
+.back-to-home {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  z-index: 10;
+}
+
+.back-home-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(5px);
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.back-home-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateX(-3px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
 .main-header {
-    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
-    color: white !important;
-    padding: 2em 2.5em !important;
-    border-radius: 20px !important;
-    margin-bottom: 2.5em !important;
-    box-shadow: 
-        0 20px 40px rgba(99, 102, 241, 0.25),
-        inset 0 0 80px rgba(255, 255, 255, 0.12) !important;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.3s ease-in-out;
+  position: relative;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+  color: white !important;
+  padding: 2em 2.5em !important;
+  border-radius: 20px !important;
+  margin-bottom: 2.5em !important;
+  box-shadow: 
+      0 20px 40px rgba(99, 102, 241, 0.25),
+      inset 0 0 80px rgba(255, 255, 255, 0.12) !important;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease-in-out;
 }
 
 .hidden {
