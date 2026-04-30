@@ -1,15 +1,16 @@
 :root {
-  --primary-color: #00A884; /* WhatsApp's new brand green */
-  --secondary-color: #008069; /* WhatsApp's darker green */
-  --tertiary-color: #075E54; /* WhatsApp's darkest green */
-  --background-color: #f0f2f5;
+  --primary-color: #6366f1;
+  --secondary-color: #4f46e5;
+  --tertiary-color: #1e1b4b;
+  --background-color: #f1f5f9;
   --card-hover-color: #ffffff;
-  --text-color: #111B21; /* WhatsApp's text color */
-  --gradient-start: #00A884;
-  --gradient-end: #008069;
+  --text-color: #1f2937;
+  --gradient-start: #6366f1;
+  --gradient-end: #4f46e5;
   --message-background: #FFFFFF;
-  --success-green: #00A884;
-  --gradient-primary: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  --success-green: #6366f1;
+  --accent-color: #06b6d4;
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
 }
 
 body {
@@ -40,16 +41,17 @@ body > .ui.logingrid {
 }
 
 .menu-header {
-  background: var(--primary-color) !important;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
   color: white !important;
   margin-bottom: 2em !important;
   box-shadow: 
-      0 20px 40px rgba(0, 168, 132, 0.2),
-      inset 0 0 80px rgba(255, 255, 255, 0.15) !important;
+      0 20px 40px rgba(99, 102, 241, 0.25),
+      inset 0 0 80px rgba(255, 255, 255, 0.12) !important;
   position: relative;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease-in-out;
+  padding: 0.5em 0 !important;
 }
 
 .login {
@@ -64,18 +66,18 @@ body > .ui.logingrid {
 }
 
 .main-header {
-  background: var(--primary-color) !important;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
   color: white !important;
   padding: 1.5em 2em !important;
   border-radius: 24px !important;
   margin-bottom: 2em !important;
   box-shadow: 
-      0 20px 40px rgba(0, 168, 132, 0.2),
-      inset 0 0 80px rgba(255, 255, 255, 0.15) !important;
+      0 20px 40px rgba(99, 102, 241, 0.25),
+      inset 0 0 80px rgba(255, 255, 255, 0.12) !important;
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease-in-out;
 }
 
@@ -102,7 +104,22 @@ body > .ui.logingrid {
 }
 
 a#menulogout, a:visited#menulogout {
-  color: #000;
+  color: white !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  padding: 0.6em 1.2em !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+a#menulogout:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .main-header .whatsapp.icon {
@@ -138,12 +155,12 @@ a#menulogout, a:visited#menulogout {
   border-radius: 16px !important;
   margin: 0.7em !important;
   background-color: var(--message-background) !important;
-  border: 1px solid rgba(18, 140, 126, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 .ui.cards > .card:not(.no-hover):hover {
   transform: translateY(-8px) !important;
-  box-shadow: 0 12px 24px rgba(18, 140, 126, 0.15) !important;
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15) !important;
   background-color: var(--card-hover-color) !important;
 }
 
@@ -158,9 +175,9 @@ a#menulogout, a:visited#menulogout {
 
 .ui.success.message {
   border-radius: 16px !important;
-  box-shadow: 0 4px 8px rgba(37, 211, 102, 0.1) !important;
-  border: 1px solid rgba(37, 211, 102, 0.2) !important;
-  background-color: rgba(231, 247, 232, 0.8) !important;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.1) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  background-color: rgba(238, 242, 255, 0.8) !important;
   color: var(--success-green) !important;
   animation: slideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
@@ -181,19 +198,19 @@ a#menulogout, a:visited#menulogout {
 
 .ui.button:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 8px 16px rgba(0, 168, 132, 0.2) !important;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25) !important;
   filter: brightness(0.95);
 }
 
 .ui.form input, .ui.form textarea {
   border-radius: 12px !important;
-  border: 2px solid rgba(18, 140, 126, 0.1) !important;
+  border: 2px solid rgba(99, 102, 241, 0.1) !important;
   transition: all 0.3s ease;
 }
 
 .ui.form input:focus, .ui.form textarea:focus {
   border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
 }
 
 .ui.grid {
@@ -251,15 +268,15 @@ a#menulogout, a:visited#menulogout {
 }
   
 #user-role-indicator.user {
-  color: #a3f298;
+  color: #a7f3d0;
 }
   
 #user-role-indicator.user i.icon {
-  color: #a3f298;
+  color: #a7f3d0;
 }
   
 #user-role-indicator.user div.label {
-  background-color: #a3f298;
+  background-color: #a7f3d0;
   color: #000;
 }
 
@@ -289,7 +306,7 @@ a#menulogout, a:visited#menulogout {
 
 .group-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.15) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
 }
 
 .group-card .content {
@@ -523,7 +540,7 @@ a#menulogout, a:visited#menulogout {
 .group-list-item .ui.small.buttons .button.primary:hover {
     background-color: var(--secondary-color) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 168, 132, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 .group-list-item .ui.small.buttons .button.secondary {
@@ -677,7 +694,7 @@ a#menulogout, a:visited#menulogout {
 #refreshGroups.ui.button:hover {
     background-color: var(--tertiary-color) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(7, 94, 84, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 /* Modal responsiveness improvements */
@@ -742,7 +759,7 @@ a#menulogout, a:visited#menulogout {
 .ui.segment .ui.basic.buttons .ui.button:hover {
     background-color: var(--tertiary-color) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(7, 94, 84, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 /* Group Management Modal Styles */
@@ -784,7 +801,7 @@ a#menulogout, a:visited#menulogout {
 /* Group Settings Sections */
 .ui.modal#modalGroupSettings .ui.dividing.header {
     color: var(--secondary-color) !important;
-    border-bottom-color: rgba(0, 168, 132, 0.2) !important;
+    border-bottom-color: rgba(99, 102, 241, 0.2) !important;
 }
 
 .ui.modal#modalGroupSettings .ui.toggle.checkbox {
@@ -818,8 +835,8 @@ a#menulogout, a:visited#menulogout {
 
 .ui.modal#modalManageParticipants .ui.info.message {
     border-radius: 8px !important;
-    border-color: rgba(0, 168, 132, 0.3) !important;
-    background-color: rgba(0, 168, 132, 0.05) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    background-color: rgba(99, 102, 241, 0.05) !important;
 }
 
 /* Participant Item in Management */
@@ -1003,7 +1020,7 @@ a#menulogout, a:visited#menulogout {
 .ui.modal .actions .ui.blue.button:hover {
     background-color: var(--secondary-color) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 168, 132, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 .ui.modal .actions .ui.green.button {
@@ -1014,7 +1031,7 @@ a#menulogout, a:visited#menulogout {
 .ui.modal .actions .ui.green.button:hover {
     background-color: var(--secondary-color) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 168, 132, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 .ui.modal .actions .ui.orange.button {
@@ -1055,8 +1072,8 @@ a#menulogout, a:visited#menulogout {
 /* Success/Error Messages in Modals */
 .ui.modal .ui.success.message {
     border-radius: 8px !important;
-    border-color: rgba(0, 168, 132, 0.3) !important;
-    background-color: rgba(0, 168, 132, 0.05) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    background-color: rgba(99, 102, 241, 0.05) !important;
     color: var(--success-green) !important;
 }
 
