@@ -263,10 +263,10 @@
 
         <section id="introducao">
             <p class="lead">
-                WspBox is an implementation of the <a href="https://github.com/tulir/whatsmeow" target="_blank">whatsmeow</a> library as a simple RESTful API service with support for multiple devices and concurrent sessions.
+                WspBox is a RESTful API service for WhatsApp with support for multiple devices and concurrent sessions.
             </p>
             <p>
-                The whatsmeow library does not use Puppeteer in headless Chrome, nor an Android emulator. It communicates directly with WhatsApp's websocket servers, being quite fast and using less memory and CPU than other solutions. The disadvantage is that a change in WhatsApp's protocol could break connections and would require a library update.
+                WspBox communicates directly with WhatsApp's websocket servers, being quite fast and using less memory and CPU than other solutions. The disadvantage is that a change in WhatsApp's protocol could break connections and would require a library update.
             </p>
             <div class="alert alert-warning">
                 <strong>⚠️ Warning:</strong> Using this software in violation of WhatsApp's Terms of Service may result in your number being banned. Be very careful, do not use it to send SPAM or similar. Use at your own risk. If you need to develop something with commercial interest, contact a global WhatsApp solutions provider and sign up for the WhatsApp Business API service.
@@ -282,7 +282,7 @@
                 </div>
                 <h2 class="mb-0">Authentication</h2>
             </div>
-            <p>WSPBOX offers two authentication methods:</p>
+            <p>WspBox offers two authentication methods:</p>
             <ul>
                 <li><strong>For regular users:</strong> Use the <code>token</code> header which will be matched with the 'users' table in the database.</li>
                 <li><strong>For administrators:</strong> Use the <code>Authorization</code> header with the administrative token to access protected administration routes.</li>
