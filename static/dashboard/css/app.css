@@ -337,15 +337,15 @@ body {
 .menu-header {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
   color: white !important;
-  margin-bottom: 2em !important;
+  margin-bottom: 1em !important;
   box-shadow: 
-      0 20px 40px rgba(99, 102, 241, 0.25),
-      inset 0 0 80px rgba(255, 255, 255, 0.12) !important;
+      0 4px 12px rgba(99, 102, 241, 0.2) !important;
   position: relative;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none !important;
   transition: all 0.3s ease-in-out;
-  padding: 0.5em 0 !important;
+  padding: 0 !important;
+  min-height: 48px !important;
 }
 
 /* .login class removed - replaced by split panel layout above */
@@ -380,11 +380,23 @@ body {
 }
 
 .menu-header .title-container {
-  font-size: clamp(1.5em, 3vw, 1.8em) !important;
+  font-size: 1.1rem !important;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: white;
+}
+
+.menu-header .title-container i.icon {
+  font-size: 1.1rem !important;
+}
+
+.menu-header .header.item {
+  padding: 0.6em 1em !important;
+}
+
+.menu-header .item {
+  padding: 0.4em 0.8em !important;
 }
 .main-header .title-container {
   display: flex;
@@ -396,9 +408,10 @@ body {
 a#menulogout, a:visited#menulogout {
   color: white !important;
   background: rgba(255, 255, 255, 0.15) !important;
-  padding: 0.6em 1.2em !important;
-  border-radius: 10px !important;
-  font-weight: 600 !important;
+  padding: 0.4em 1em !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
   transition: all 0.3s ease !important;
   text-decoration: none !important;
   display: inline-block !important;
@@ -408,7 +421,7 @@ a#menulogout, a:visited#menulogout {
 
 a#menulogout:hover {
   background: rgba(255, 255, 255, 0.25) !important;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1372,4 +1385,8 @@ a#menulogout:hover {
     border-color: rgba(219, 40, 40, 0.3) !important;
     background-color: rgba(219, 40, 40, 0.05) !important;
     color: #db2828 !important;
+}
+
+.ui.menu .item {
+    padding: 0em 1em;
 }
