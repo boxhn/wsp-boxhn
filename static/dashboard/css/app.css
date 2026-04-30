@@ -19,25 +19,319 @@ body {
   font-family: "Helvetica Neue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 
-body > .ui.logingrid {
+/* ===== LOGIN SPLIT PANEL ===== */
+.login-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  max-width: 800px !important;
-  margin:auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 1000;
 }
 
-#loginForm label {
-  color: var(--secondary-color);
-  font-weight: 600;
+.login-container {
+  display: flex;
+  width: 900px;
+  max-width: 95vw;
+  min-height: 550px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  animation: loginFadeIn 0.6s ease-out;
+}
+
+@keyframes loginFadeIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Left Panel - Branding */
+.login-left-panel {
+  flex: 1;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3em 2em;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-left-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+  animation: loginBgPulse 8s ease-in-out infinite;
+}
+
+@keyframes loginBgPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.login-left-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: white;
+}
+
+.login-brand-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5em;
+  opacity: 0.9;
+}
+
+.login-left-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 0 0.2em;
+  letter-spacing: -0.5px;
+}
+
+.login-left-subtitle {
   font-size: 1rem;
-  margin-bottom: 0.75rem;
+  opacity: 0.85;
+  margin: 0 0 1.5em;
+  font-weight: 400;
 }
 
-.whatsapp.icon.bi-whatsapp {
-  font-size: 6rem;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+.login-left-divider {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  margin: 0 auto 1.5em;
+  border-radius: 2px;
+}
+
+.login-left-description {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.8;
+  margin-bottom: 2em;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.login-left-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  align-items: flex-start;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.login-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.login-feature-item i.icon {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+/* Right Panel - Form */
+.login-right-panel {
+  flex: 1.2;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3em 2.5em;
+}
+
+.login-right-content {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-right-header {
+  margin-bottom: 2em;
+  text-align: center;
+}
+
+.login-right-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.3em;
+}
+
+.login-right-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.login-right-content .ui.form .field {
+  margin-bottom: 1.5em;
+}
+
+.login-right-content .ui.form label {
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.login-right-content .ui.form label i.icon {
+  color: var(--primary-color);
+  font-size: 0.9em;
+}
+
+.login-right-content .ui.left.icon.input {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.login-right-content .ui.left.icon.input input {
+  border-radius: 12px !important;
+  border: 2px solid #e5e7eb !important;
+  padding: 0.9em 1em 0.9em 3em !important;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: #f9fafb;
+}
+
+.login-right-content .ui.left.icon.input input:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  background: white;
+}
+
+.login-right-content .ui.left.icon.input i.icon {
+  left: 1em;
+  color: #9ca3af;
+  font-size: 1em;
+}
+
+.login-right-content .ui.description {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.5em;
+}
+
+.login-submit-btn {
+  padding: 0.9em !important;
+  font-size: 1rem !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 0.5em !important;
+}
+
+.login-submit-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3) !important;
+}
+
+.login-divider {
+  margin: 1em 0 !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+.login-admin-btn {
+  padding: 0.8em !important;
+  font-size: 0.9rem !important;
+  border-radius: 12px !important;
+  background: var(--tertiary-color) !important;
+  color: white !important;
+  border: 2px solid var(--tertiary-color) !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-admin-btn:hover {
+  background: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(30, 27, 75, 0.3) !important;
+}
+
+.login-footer-text {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+}
+
+.login-footer-text i.icon {
+  font-size: 0.9em;
+}
+
+/* Admin Mode - changes login panel background when admin button is active */
+.login-admin-btn.teal {
+  background: linear-gradient(135deg, #1e1b4b, #312e81) !important;
+  color: white !important;
+  border-color: #1e1b4b !important;
+}
+
+.login-admin-btn.teal:hover {
+  background: linear-gradient(135deg, #312e81, #4338ca) !important;
+  box-shadow: 0 8px 20px rgba(30, 27, 75, 0.3) !important;
+}
+
+/* Responsive Login */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    min-height: auto;
+    max-width: 95vw;
+    border-radius: 20px;
+  }
+
+  .login-left-panel {
+    padding: 2em 1.5em;
+  }
+
+  .login-left-panel::before {
+    display: none;
+  }
+
+  .login-left-title {
+    font-size: 1.6rem;
+  }
+
+  .login-left-description {
+    max-width: 100%;
+  }
+
+  .login-left-features {
+    max-width: 100%;
+    align-items: center;
+  }
+
+  .login-right-panel {
+    padding: 2em 1.5em;
+  }
+
+  .login-right-content {
+    max-width: 100%;
+  }
 }
 
 .menu-header {
@@ -54,11 +348,7 @@ body > .ui.logingrid {
   padding: 0.5em 0 !important;
 }
 
-.login {
-  border-radius: 15px !important;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
-  padding: 2em !important;
-}
+/* .login class removed - replaced by split panel layout above */
 
 .container {
   max-width: 1400px !important;

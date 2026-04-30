@@ -17,7 +17,7 @@
 }
 
 body {
-    background-color: var(--background-color) !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: var(--text-color) !important;
     font-family: 'Poppins', "Helvetica Neue", Helvetica, Arial, sans-serif !important;
     min-height: 100vh;
