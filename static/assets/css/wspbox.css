@@ -1,0 +1,48 @@
+/* ============================================================
+   wspbox.css · tema visual de WspBox sobre BoxUI
+   ------------------------------------------------------------
+   Qué hace: define la identidad de WspBox (color de marca y
+     acentos) como tokens de BoxUI, y los pocos ajustes propios
+     que BoxUI no cubre. Es la ÚNICA hoja de estilo propia del
+     rediseño: landing, login y dashboard la comparten.
+   Expone: tokens --box-* / --boxp-* y las clases .wsp-*.
+   Depende de: css/vendor.css y css/boxui/boxui.min.css cargados
+     ANTES (en ese orden); en la landing, también
+     css/boxui-public/boxui-public.min.css.
+   Documentación: docs/diseno-ui.md
+   Reglas: sin hex fuera de los tokens, sin !important, no se
+     edita ningún .min.css. Esta hoja va sin capa (gana a BoxUI)
+     salvo los tokens, que van en box.tokens para que
+     data-ui-mode y el contexto public sigan funcionando.
+   ============================================================ */
+
+@layer box.tokens {
+    :root {
+        /* Verde profundo: contraste 5,3:1 con texto blanco (AA).
+           Del resto de la paleta (hover, fondos suaves, foco) se
+           encarga BoxUI con color-mix a partir de este valor. */
+        --box-brand-500: #0b7a5e;
+
+        /* Acentos del contexto public (degradados de la landing).
+           De fábrica son teal y violeta; aquí se mantienen en la
+           familia verde-azulada para que no aparezca el violeta. */
+        --boxp-accent-2: #25b37a;
+        --boxp-accent-3: #0f6b7a;
+    }
+}
+
+/* Bloque de código de la landing (curl de ejemplo dentro del
+   mockup). Solo ajusta el margen: el estilo de <pre> es de BoxUI. */
+.wsp-code {
+    margin: 0;
+    border-radius: 0;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+/* Etiqueta del método HTTP dentro del ejemplo */
+.wsp-code .wsp-method {
+    color: var(--box-brand-600);
+    font-weight: 600;
+}

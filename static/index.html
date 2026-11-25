@@ -1,115 +1,210 @@
 <!DOCTYPE html>
-<html lang="es"> <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WspBox - API REST para WhatsApp</title>
+<!--
+  Landing de WspBox (ruta "/").
+  Qué hace: presenta el servicio y lleva al panel y al cliente web.
+  Diseño: BoxUI en contexto "public" + tema en assets/css/wspbox.css.
+  Dependencias de carga (orden importa): vendor.css -> boxui.min.css ->
+  boxui-public.min.css -> wspbox.css. Sin CDN: todo sale de /assets.
+  Documentación: docs/diseno-ui.md
+-->
+<html lang="es" data-theme="light" data-ui-mode="normal" data-ui-context="public">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WspBox · API REST para WhatsApp</title>
+    <meta name="description" content="WspBox es una API REST para enviar y recibir mensajes de WhatsApp desde tu aplicación, con varias sesiones en una misma instalación.">
     <link rel="icon" href="/images/favicon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Antes de cualquier <link>: evita el parpadeo en claro -->
+    <script>
+    (function () {
+        var d = document.documentElement;
+        try {
+            d.setAttribute('data-theme', localStorage.getItem('box-theme') || 'light');
+            d.setAttribute('data-ui-mode', localStorage.getItem('box-ui-mode') || 'normal');
+        } catch (e) { /* almacenamiento bloqueado: se queda el valor por defecto */ }
+    })();
+    </script>
+
+    <link rel="preload" href="/assets/lib/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/css/vendor.css">
+    <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
+    <link rel="stylesheet" href="/assets/css/boxui-public/boxui-public.min.css">
+    <link rel="stylesheet" href="/assets/css/wspbox.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <img src="/images/favicon.png" alt="WspBox Logo">
-                <h1>WspBox</h1>
-            </div>
+    <a class="box-skip-link" href="#contenido">Saltar al contenido</a>
 
-            <button class="menu-toggle" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            
-            <nav>
-                <ul id="main-menu">
-                    <li><a href="#features">Características</a></li>
-                    <li><a href="/dashboard" class="btn">Panel</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <nav class="box-public-nav" data-box-nav aria-label="Principal">
+        <div class="box-nav-inner">
+            <a href="/" class="box-nav-brand">
+                <img src="/images/favicon.png" alt="" width="28" height="28"> WspBox
+            </a>
 
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h2 class="xfade-in">API REST para WhatsApp</h2>
-                <p class="xfade-in">WspBox es un servicio API REST para WhatsApp, con soporte para múltiples dispositivos y sesiones concurrentes.</p>
-                <div class="btn-group xfade-in">
-                    <a href="/dashboard" class="btn"><i class="fas fa-tachometer-alt"></i> Acceder al Panel</a>
-                    <a href="/client/" class="btn outline">Cliente Web</a>
-                </div>
+            <ul class="box-nav-links">
+                <li><a href="#caracteristicas" class="box-nav-link">Características</a></li>
+                <li><a href="#empezar" class="box-nav-link">Cómo empezar</a></li>
+                <li><a href="/client/" class="box-nav-link">Cliente web</a></li>
+            </ul>
+
+            <div class="box-nav-actions">
+                <button type="button" class="box-nav-icon-btn" onclick="boxToggleTheme()" aria-label="Cambiar entre tema claro y oscuro">
+                    <i class="fas fa-circle-half-stroke"></i>
+                </button>
+                <a href="/dashboard" class="box-btn box-btn-sm box-btn-pill box-nav-cta">Abrir el panel</a>
+                <button type="button" class="box-nav-icon-btn box-nav-toggle"
+                        data-box-target="#menu-movil" aria-expanded="false" aria-label="Menú">
+                    <span class="box-burger"><span></span><span></span><span></span></span>
+                </button>
             </div>
         </div>
-        <div class="scroll-down">
-            <span>Aprende más</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </section>
+    </nav>
 
-    <section id="features" class="section features">
-        <div class="container">
-            <div class="section-title">
-                <h2>Características Principales</h2>
-                <p>WspBox ofrece una API completa para interactuar con WhatsApp de manera eficiente sin usar recursos pesados como Puppeteer o emuladores de Android.</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Alto Rendimiento</h3>
-                    <p>Comunicación directa con los servidores de WhatsApp a través de websocket, resultando en menor uso de memoria y CPU.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Múltiples Sesiones</h3>
-                    <p>Soporte para múltiples dispositivos y usuarios simultáneamente en la misma instancia.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <h3>Mensajes Enriquecidos</h3>
-                    <p>Envía texto, imágenes, audio, documentos, videos, stickers, ubicación y contactos.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <h3>Webhooks</h3>
-                    <p>Configura webhooks para recibir notificaciones en tiempo real de eventos y mensajes.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <h3>Verificación de Usuarios</h3>
-                    <p>Verifica si los números de teléfono tienen WhatsApp y obtén información del perfil.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>Autenticación Simple</h3>
-                    <p>Sistema de tokens para autenticación de usuarios fácil y segura.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-<!-- Demo section removed -->
-
-    <div class="theme-toggle" aria-label="Toggle light/dark mode">
-        <i class="fas fa-moon"></i>
+    <div class="box-nav-drawer" id="menu-movil" data-box-panel aria-label="Menú móvil">
+        <a href="#caracteristicas" class="box-nav-link">Características</a>
+        <a href="#empezar" class="box-nav-link">Cómo empezar</a>
+        <a href="/client/" class="box-nav-link">Cliente web</a>
+        <a href="/dashboard" class="box-btn box-btn-block box-btn-lg" style="margin-top:1rem">Abrir el panel</a>
     </div>
+    <div class="box-overlay" data-box-close aria-hidden="true"></div>
 
-    <script src="js/main.js"></script>
+    <main id="contenido">
+        <!-- Hero: lo memorable de la página es la llamada real a la API -->
+        <section class="box-hero box-hero-split box-hero-grid-bg">
+            <div class="box-hero-inner">
+                <div class="box-hero-copy">
+                    <h1 class="box-anim-fade-up">WhatsApp para tus sistemas, con una llamada HTTP</h1>
+                    <p class="box-lead box-anim-fade-up">
+                        WspBox es una API REST para enviar y recibir mensajes de WhatsApp desde tu aplicación.
+                        Varias sesiones en una misma instalación, sin emuladores ni navegadores.
+                    </p>
+                    <div class="box-hero-actions box-anim-fade-up">
+                        <a href="/dashboard" class="box-btn box-btn-lg">
+                            <i class="fas fa-gauge-high"></i> Abrir el panel
+                        </a>
+                        <a href="/client/" class="box-btn box-btn-outline box-btn-lg">Probar el cliente web</a>
+                    </div>
+                </div>
+
+                <figure class="box-hero-media box-anim-fade-up">
+                    <div class="box-mockup">
+                        <div class="box-mockup-bar" aria-hidden="true">
+                            <span class="box-mockup-dots"></span>
+                            <span class="box-mockup-url">POST tu-dominio/chat/send/text</span>
+                        </div>
+                        <div class="box-mockup-body">
+<pre class="wsp-code"><code><span class="wsp-method">curl</span> -X POST https://tu-dominio/chat/send/text \
+  -H 'Token: TU_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"Phone":"5491155554444",
+       "Body":"Hola desde WspBox"}'
+
+# respuesta
+{"code":200,"data":{"Details":"Sent"}}</code></pre>
+                        </div>
+                    </div>
+                    <figcaption class="box-sr-only">Ejemplo de una llamada curl que envía un mensaje de texto</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section class="box-section" id="caracteristicas">
+            <div class="box-container">
+                <header class="box-section-head box-center">
+                    <h2>Lo que incluye</h2>
+                    <p class="box-lead">
+                        Una API completa para WhatsApp que habla directo con sus servidores,
+                        sin Puppeteer ni emuladores de Android.
+                    </p>
+                </header>
+
+                <div class="box-features-grid">
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-bolt"></i></div>
+                        <h3>Rápida y liviana</h3>
+                        <p>Se conecta por websocket directamente a WhatsApp, con poco uso de memoria y de procesador.</p>
+                    </article>
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-users"></i></div>
+                        <h3>Varias sesiones</h3>
+                        <p>Atiende varios teléfonos y usuarios a la vez en la misma instalación.</p>
+                    </article>
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-comment-dots"></i></div>
+                        <h3>Todo tipo de mensajes</h3>
+                        <p>Envía texto, imágenes, audio, documentos, video, stickers, ubicaciones y contactos.</p>
+                    </article>
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-bell"></i></div>
+                        <h3>Webhooks</h3>
+                        <p>Recibe en tu sistema los mensajes y eventos de WhatsApp en cuanto ocurren.</p>
+                    </article>
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-user-check"></i></div>
+                        <h3>Verificación de números</h3>
+                        <p>Comprueba si un número tiene WhatsApp y consulta los datos de su perfil.</p>
+                    </article>
+                    <article class="box-card">
+                        <div class="box-feature-icon"><i class="fas fa-key"></i></div>
+                        <h3>Acceso por token</h3>
+                        <p>Cada usuario trabaja con su propio token, sin contraseñas que compartir.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Aquí la numeración sí es información: es una secuencia real -->
+        <section class="box-section box-section-alt" id="empezar">
+            <div class="box-container">
+                <header class="box-section-head box-center">
+                    <h2>Cómo empezar</h2>
+                </header>
+
+                <div class="box-features-grid">
+                    <article class="box-card">
+                        <span class="box-badge box-badge-primary">Paso 1</span>
+                        <h3>Entra al panel</h3>
+                        <p>Ingresa con el token de tu usuario. Si todavía no tienes uno, pídeselo a quien administra WspBox.</p>
+                    </article>
+                    <article class="box-card">
+                        <span class="box-badge box-badge-primary">Paso 2</span>
+                        <h3>Vincula el teléfono</h3>
+                        <p>Escanea el código QR desde WhatsApp, en Dispositivos vinculados.</p>
+                    </article>
+                    <article class="box-card">
+                        <span class="box-badge box-badge-primary">Paso 3</span>
+                        <h3>Envía y recibe mensajes</h3>
+                        <p>Usa la API con tu token o configura un webhook para recibir los eventos.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="box-section">
+            <div class="box-container">
+                <div class="box-cta">
+                    <h2>Conecta tu primer número</h2>
+                    <p class="box-lead">Entra al panel con tu token y escanea el código QR.</p>
+                    <a href="/dashboard" class="box-btn box-btn-invert box-btn-lg box-btn-pill">Abrir el panel</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="box-public-footer">
+        <div class="box-container">
+            <div class="box-footer-bottom">
+                <span>&copy; 2026 WspBox</span>
+                <nav class="box-footer-legal" aria-label="Enlaces">
+                    <a href="/dashboard">Panel</a>
+                    <a href="/client/">Cliente web</a>
+                    <a href="/api">Documentación de la API</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/assets/js/box-ui.js" defer></script>
+    <script src="/assets/js/box-nav.js" defer></script>
 </body>
 </html>

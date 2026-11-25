@@ -1,0 +1,21 @@
+/* ============================================================
+   ui.box.hn · CSS de terceros, dentro de la capa `vendor`
+   ------------------------------------------------------------
+   Se carga ANTES que boxui.css, y es deliberado.
+
+   Las capas se ordenan por primera aparición. Si esta hoja fuera
+   después del framework, `vendor` se registraría al final del
+   orden y ganaría a todas las capas de BoxUI — justo lo contrario
+   de lo que se busca. Cargándola primero, `vendor` queda la
+   primera y cualquier regla de BoxUI la puede ajustar.
+
+   Por qué importa: FontAwesome fija `display` y `line-height` en
+   todas sus clases `.fa*`. Sin capa (o con la capa mal ordenada)
+   vence en silencio a las reglas de BoxUI sobre iconos, y los
+   glifos se quedan pegados arriba a la izquierda de su caja.
+
+   Un <link rel="stylesheet"> no puede declarar capa: por eso va
+   con @import.
+   ============================================================ */
+
+@import url("../lib/fontawesome/css/all.min.css") layer(vendor);
