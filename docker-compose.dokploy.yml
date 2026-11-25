@@ -1,0 +1,53 @@
+# docker-compose.dokploy.yml
+#
+# Qué hace: compose de producción para Dokploy (servicio "wuzapi" de MarketBox,
+#   dominio wsp.boxhn.com). Compila la imagen desde este repo (fork de
+#   asternic/wuzapi) en lugar de bajar asternic/wuzapi:latest.
+# Expone: wuzapi-server en el puerto interno 8080 (Traefik de Dokploy lo publica
+#   por dominio; no se abren puertos en el host).
+# Depende de: Dockerfile de este repo y de las variables definidas en la pestaña
+#   Environment del servicio en Dokploy (WUZAPI_ADMIN_TOKEN,
+#   WUZAPI_GLOBAL_ENCRYPTION_KEY, DB_USER, DB_PASSWORD, DB_NAME, TZ).
+#   Los secretos NO viven aquí, solo referencias ${VAR}.
+# Diferencias con docker-compose.yml (uso local): sin RabbitMQ, sin "ports"
+#   publicados y con postgres:16-alpine + volumen db_data, igual que producción
+#   antes de pasar a build desde el repo, para no tocar los datos existentes.
+# Cómo se usa: Dokploy > servicio wuzapi > Provider GitHub > ruta de compose
+#   ./docker-compose.dokploy.yml, rama main.
+services:
+  wuzapi-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - 8080
+    environment:
+      - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN}
+      - WUZAPI_GLOBAL_ENCRYPTION_KEY=${WUZAPI_GLOBAL_ENCRYPTION_KEY}
+      - DB_USER=${DB_USER:-wuzapi}
+      - DB_PASSWORD=${DB_PASSWORD:-wuzapi}
+      - DB_NAME=${DB_NAME:-wuzapi}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - TZ=${TZ:-UTC}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-wuzapi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-wuzapi}
+      POSTGRES_DB: ${DB_NAME:-wuzapi}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER:-wuzapi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
