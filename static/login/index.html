@@ -1,296 +1,349 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<!--
+  Panel de acceso de WspBox (ruta "/login").
+  Qué hace: autentica con el token del usuario, vincula el teléfono con QR o
+  código de emparejamiento y ofrece acciones rápidas de la API (webhook, chat,
+  usuario).
+  Diseño: BoxUI (contexto "app") + tema en assets/css/wspbox.css.
+  Modales: <dialog> nativo manejado por assets/js/wsp-dialog.js (sin jQuery
+  ni Fomantic). Sin CDN: todo sale de /assets.
+  Los ids de los elementos los usa el script de esta misma página: no
+  renombrarlos sin actualizar el script ni static/login/index.test.cjs.
+  Documentación: docs/diseno-ui.md
+-->
+<html lang="es" data-theme="light" data-ui-mode="normal" data-ui-context="app">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WspBox</title>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <title>Acceso · WspBox</title>
+    <link rel="icon" href="/images/favicon.png">
+
+    <!-- Antes de cualquier <link>: evita el parpadeo en claro -->
+    <script>
+    (function () {
+        var d = document.documentElement;
+        try {
+            d.setAttribute('data-theme', localStorage.getItem('box-theme') || 'light');
+            d.setAttribute('data-ui-mode', localStorage.getItem('box-ui-mode') || 'normal');
+        } catch (e) { /* almacenamiento bloqueado: se queda el valor por defecto */ }
+    })();
+    </script>
+
+    <link rel="preload" href="/assets/lib/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/css/vendor.css">
+    <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
+    <link rel="stylesheet" href="/assets/css/wspbox.css">
+    <script src="/assets/js/box-ui.js" defer></script>
 </head>
-<body class="px-4 py-4">
-  <div class="ui container">
+<body>
+    <a class="box-skip-link" href="#contenido">Saltar al contenido</a>
 
-    <div class="main-header">
-      <div class="back-to-home">
-        <a href="/" class="ui mini button back-home-btn">
-          <i class="arrow left icon"></i> Volver al inicio
-        </a>
-      </div>
-      <h1 class="ui header center aligned">
-        <span class="title-container">
-          <i class="whatsapp icon"></i> Bienvenido a WspBox
-        </span>
-      </h1>
-    </div>
-
-    <div class="ui segment hidden" id="connectstatus"></div>
-
-    <div class="ui horizontal divider"> Sesión </div>
-    <div class="ui three column stackable grid cards">
-      <div class="green card" style="cursor: pointer;" id="authWidget">
-        <div class="content"><a class="ui teal right ribbon label">Sesión</a>
-          <div class="header">Autenticar</div>
-          <div class="description"> Ingresa o cambia el token de autenticación. </div>
-        </div>
-      </div>
- 
-      <div class="green card hidden" style="cursor: pointer;" id="loginQR">
-        <div class="content"><a class="ui teal right ribbon label">Sesión</a>
-          <div class="header">Iniciar con QR</div>
-          <div class="description"> Escanea tu código QR para acceder a todas las capacidades de la API.</div>
-        </div>
-      </div>
-      <div class="green card hidden" style="cursor: pointer;" id="loginCode">
-        <div class="content"><a class="ui teal right ribbon label">Sesión</a>
-          <div class="header">Iniciar con Código de Emparejamiento</div>
-          <div class="description"> Ingresa tu código de emparejamiento para iniciar sesión y acceder a tus dispositivos.</div>
-        </div>
-      </div>
-      <div class="green card hidden" style="cursor: pointer;" id="logoutWidget">
-        <div class="content"><a class="ui teal right ribbon label">Sesión</a>
-          <div class="header">Cerrar Sesión</div>
-          <div class="description">Cierra la conexión con los servidores de WhatsApp y termina la sesión.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ui horizontal divider widget"> Webhook </div>
-    <div class="ui three column stackable grid cards">
-      <div class="green card hidden widget" style="cursor: pointer;" id="setWebhook">
-        <div class="content"><a class="ui green right ribbon label">Webhook</a>
-          <div class="header">Establecer Webhook</div>
-          <div class="description"> Establece el webhook a llamar cuando se recibe un evento/mensaje.</div>
-        </div>
-      </div>
-      <div class="green card hidden widget" style="cursor: pointer;" id="getWebhook">
-        <div class="content"><a class="ui green right ribbon label">Webhook</a>
-          <div class="header">Obtener Webhook</div>
-          <div class="description"> Obtiene el webhook actualmente configurado.</div>
-        </div>
-      </div>
-      <div class="green card hidden widget" style="cursor: pointer;" id="deleteWebhook">
-        <div class="content"><a class="ui green right ribbon label">Webhook</a>
-          <div class="header">Eliminar Webhook</div>
-          <div class="description"> Elimina el webhook actual.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ui horizontal divider widget"> Chat </div>
-    <div class="ui three column stackable grid cards">
-      <div class="blue card hidden widget" style="cursor: pointer;" id="sendTextMessage">
-        <div class="content"><a class="ui blue right ribbon label">Chat</a>
-          <div class="header">Enviar Mensaje de Texto</div>
-          <div class="description"> Envía un mensaje de texto.</div>
-        </div>
-      </div>
-      <div class="blue card hidden widget" style="cursor: pointer;" id="deleteMessage">
-        <div class="content"><a class="ui blue right ribbon label">Chat</a>
-          <div class="header">Eliminar Mensaje</div>
-          <div class="description"> Elimina tu mensaje enviado.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ui horizontal divider widget"> Usuario </div>
-    <div class="ui three column stackable grid cards">
-      <div class="red card hidden widget" style="cursor: pointer;" id="userInfo">
-        <div class="content"><a class="ui red right ribbon label">Usuario</a>
-          <div class="header">Información de Usuario</div>
-          <div class="description"> Busca usuarios por número de teléfono.</div>
-        </div>
-      </div>
-      <div class="red card hidden widget" style="cursor: pointer;" id="userAvatar">
-        <div class="content"><a class="ui red right ribbon label">Usuario</a>
-          <div class="header">Avatar de Usuario</div>
-          <div class="description"> Obtiene el avatar del usuario por número de teléfono.</div>
-        </div>
-      </div>
-      <div class="red card hidden widget" style="cursor: pointer;" id="userContacts">
-        <div class="content"><a class="ui red right ribbon label">Usuario</a>
-          <div class="header">Obtener Contactos</div>
-          <div class="description"> Obtiene todos los contactos.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Session Modals -->
-    <div class="ui modal" id="modalAuthenticate"><i class="close icon"></i>
-      <div class="header"> Ingresar Token de Autenticación </div>
-      <div class="content">
-        <div class="ui info danger hidden" id="invalidCredentials">
-          <div class="ui icon message">
-            <i class="exclamation triangle icon"></i>
-            <div class="content">
-              <div class="header" id="incorrectstatus">
-                Token Inválido
-              </div>
+    <main id="contenido" class="container-fluid-custom">
+        <div class="box-page-header">
+            <div class="box-page-title">
+                <h1><i class="fab fa-whatsapp"></i> WspBox</h1>
+                <small>Conecta tu número de WhatsApp y prueba la API.</small>
             </div>
-          </div>
-        <hr>
+            <div class="box-actions">
+                <a href="/" class="box-btn box-btn-sm outline secondary"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+                <button type="button" class="box-btn-icon box-btn-sm outline secondary" onclick="boxToggleTheme()" aria-label="Cambiar entre tema claro y oscuro">
+                    <i class="fas fa-circle-half-stroke"></i>
+                </button>
+            </div>
         </div>
-        <div class="ui form">
-          <div class="field"><label>Token</label><input id='authtoken' type="text" placeholder="Token de Autenticación"><small>Presiona Enter para enviar</small></div>
-        </div>
-      </div>
-    </div>
 
-    <div class="ui modal" id="modalLoginQR">
-      <i class="close icon"></i>
-      <div class="header">
-        Iniciar Sesión en WhatsApp con Código QR
-      </div>
-      <div class="image content">
-        <div class="ui medium image">
-          <div id="qrContainer" class="text-center" style="width:275px;height:275px; border: 10px solid green; margin:auto;"></div>
-        </div>
-        <div class="description">
-          <div class="ui header">Por favor escanea para conectar</div>
-          <p>Abrir Configuración > Dispositivos Vinculados > Vincular Dispositivo</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="ui modal" id="modalLoginWithCode"><i class="close icon"></i>
-      <div class="header"> Obtener Código de Emparejamiento </div>
-      <div class="content">
-        <div class="ui message info">
-          <div class="header" id="pairInfo">¿Cómo emparejar?</div>
-          <ol id="pairHelp">
-            <li>Abre tu WhatsApp</li>
-            <li>Vincula un dispositivo</li>
-            <li>Vincula con código de emparejamiento</li>
-          </ol>
-        </div>
-        <div class="ui form">
-          <div class="field"><label>Teléfono</label><input id="pairphoneinput" type="text" placeholder="Escribe tu número de teléfono"><small>Presiona Enter para enviar</small></div>
-        </div>
-      </div>
-    </div>
+        <!-- Estado de la conexión: el script escribe el texto y alterna success/danger -->
+        <div class="box-alert box-alert-danger wsp-oculto" id="connectstatus" role="status"></div>
 
-    <!-- Webhook Modals -->
-    <div class="ui modal" id="modalGetWebhook"><i class="close icon"></i>
-      <div class="header"> Webhook </div>
-      <div class="content">
-        <div class="ui message info hidden"></div>
-        URL:
-        <div class="ui message info" id="getWebhookContainer"></div>
-        Eventos:
-        <div class="ui message info" id="getWebhookContainerEvents"></div>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-      </div>
-    </div>
+        <section class="wsp-grupo">
+            <h2 class="box-divider box-divider-start">Sesión</h2>
+            <div class="grid">
+                <article class="box-stretch-host wsp-widget" id="authWidget">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-key"></i> Ingresar token</button></h3>
+                    <p class="box-muted">Escribe o cambia el token de acceso.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget wsp-oculto" id="loginQR">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-qrcode"></i> Vincular con código QR</button></h3>
+                    <p class="box-muted">Escanea el código desde WhatsApp para conectar este número.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget wsp-oculto" id="loginCode">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-hashtag"></i> Vincular con código de emparejamiento</button></h3>
+                    <p class="box-muted">Usa un código si no puedes escanear el QR.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget wsp-oculto" id="logoutWidget">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-right-from-bracket"></i> Cerrar sesión de WhatsApp</button></h3>
+                    <p class="box-muted">Desvincula este número de WspBox.</p>
+                </article>
+            </div>
+        </section>
 
-    <div class="ui modal" id="modalSetWebhook"><i class="close icon"></i>
-      <div class="header"> Webhook </div>
-      <div class="content">
-        <div class="ui form">
-          <div class="field">
-            <label>Eventos del Webhook</label>
-            <select id="webhookEvents" class="ui fluid dropdown" multiple="">
-              <option value="">Seleccionar Eventos</option>
-              <option value="Message">Mensaje</option>
-              <option value="ReadReceipt">Recibo de Lectura</option>
-              <option value="Presence">Presencia</option>
-              <option value="HistorySync">Sincronización de Historial</option>
-              <option value="ChatPresence">Presencia en Chat</option>
-              <option value="All">Todos</option>
-            </select>
-          </div>
-          <div class="field"><label>URL del Webhook</label><input id="webhookinput" type="text" placeholder="Escribe la URL del webhook"></div>
-        </div>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-        <div class="ui positive right labeled icon button">Establecer<i class="checkmark icon"></i></div>
-      </div>
-    </div>
+        <!-- Los grupos siguientes solo aparecen con la sesión de WhatsApp activa -->
+        <section class="wsp-grupo wsp-requiere-sesion wsp-oculto">
+            <h2 class="box-divider box-divider-start">Webhook</h2>
+            <div class="grid">
+                <article class="box-stretch-host wsp-widget" id="setWebhook">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-bell"></i> Guardar webhook</button></h3>
+                    <p class="box-muted">Define la URL que recibirá los eventos y mensajes.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget" id="getWebhook">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-eye"></i> Ver webhook</button></h3>
+                    <p class="box-muted">Muestra la URL y los eventos configurados.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget" id="deleteWebhook">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-trash"></i> Eliminar webhook</button></h3>
+                    <p class="box-muted">Deja de enviar eventos a la URL actual.</p>
+                </article>
+            </div>
+        </section>
 
-    <div class="ui modal" id="modalDeleteWebhook"><i class="close icon"></i>
-      <div class="header"> Eliminar Webhook </div>
-      <div class="content">
-          ¿Estás seguro?
-      </div>
-      <div class="actions">
-        <div class="ui negative button">No</div>
-        <div class="ui positive right labeled icon button">Sí</div>
-      </div>
-    </div>
+        <section class="wsp-grupo wsp-requiere-sesion wsp-oculto">
+            <h2 class="box-divider box-divider-start">Chat</h2>
+            <div class="grid">
+                <article class="box-stretch-host wsp-widget" id="sendTextMessage">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-paper-plane"></i> Enviar mensaje de texto</button></h3>
+                    <p class="box-muted">Envía un mensaje a un número de teléfono.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget" id="deleteMessage">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-eraser"></i> Eliminar mensaje</button></h3>
+                    <p class="box-muted">Borra un mensaje que enviaste.</p>
+                </article>
+            </div>
+        </section>
 
+        <section class="wsp-grupo wsp-requiere-sesion wsp-oculto">
+            <h2 class="box-divider box-divider-start">Usuario</h2>
+            <div class="grid">
+                <article class="box-stretch-host wsp-widget" id="userInfo">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-user"></i> Consultar usuario</button></h3>
+                    <p class="box-muted">Busca los datos de un número de teléfono.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget" id="userAvatar">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-image"></i> Ver avatar</button></h3>
+                    <p class="box-muted">Obtiene la foto de perfil de un número de teléfono.</p>
+                </article>
+                <article class="box-stretch-host wsp-widget" id="userContacts">
+                    <h3><button type="button" class="box-stretch-link wsp-widget-btn"><i class="fas fa-download"></i> Descargar contactos</button></h3>
+                    <p class="box-muted">Guarda todos tus contactos en un archivo JSON.</p>
+                </article>
+            </div>
+        </section>
+    </main>
 
-    <!-- User Modals -->
+    <!-- Modales de sesión -->
+    <dialog id="modalAuthenticate" class="box-modal-sm">
+        <article>
+            <header><span><i class="fas fa-key"></i> Ingresar token</span></header>
+            <div class="modal-body">
+                <div class="box-alert box-alert-danger wsp-oculto" id="invalidCredentials" role="alert">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <div id="incorrectstatus">Token inválido</div>
+                </div>
+                <div class="box-field">
+                    <label for="authtoken">Token</label>
+                    <input id="authtoken" type="text" placeholder="Pega tu token de acceso" autocomplete="off">
+                    <small>Presiona Enter para continuar</small>
+                </div>
+            </div>
+        </article>
+    </dialog>
 
-    <div class="ui modal" id="modalUserInfo"><i class="close icon"></i>
-      <div class="header"> Información de Usuario </div>
-      <div class="content">
-        <div class="ui message info hidden" id="userInfoContainer"></div>
-        <div class="ui form">
-          <div class="field"><label>Teléfono</label><input id="userinfoinput" type="text" placeholder="Escribe número de teléfono"></div>
-        </div>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-        <div class="ui positive right labeled icon button">Obtener Info<i class="checkmark icon"></i></div>
-      </div>
-    </div>
+    <dialog id="modalLoginQR" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-qrcode"></i> Vincular con código QR</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body wsp-qr-body">
+                <div id="qrContainer" class="wsp-qr"></div>
+                <p>Escanea el código para conectar.</p>
+                <small class="box-muted">En WhatsApp abre Configuración, Dispositivos vinculados y Vincular un dispositivo.</small>
+            </div>
+        </article>
+    </dialog>
 
-    <div class="ui modal" id="modalUserAvatar"><i class="close icon"></i>
-      <div class="header"> Avatar de Usuario </div>
-      <div class="content">
-        <div class="ui message info hidden" id="userAvatarContainer"></div>
-        <div class="ui form">
-          <div class="field"><label>Teléfono</label><input id="useravatarinput" type="text" placeholder="Escribe número de teléfono"></div>
-        </div>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-        <div class="ui positive right labeled icon button">Obtener Avatar<i class="checkmark icon"></i></div>
-      </div>
-    </div>
+    <dialog id="modalLoginWithCode" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-hashtag"></i> Código de emparejamiento</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-alert">
+                    <div>
+                        <strong id="pairInfo">¿Cómo emparejar?</strong>
+                        <ol id="pairHelp">
+                            <li>Abre WhatsApp en tu teléfono.</li>
+                            <li>Elige Dispositivos vinculados y Vincular un dispositivo.</li>
+                            <li>Toca Vincular con el número de teléfono e ingresa el código.</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="box-field">
+                    <label for="pairphoneinput">Teléfono</label>
+                    <input id="pairphoneinput" type="text" placeholder="Número con código de país" inputmode="tel">
+                    <small>Presiona Enter para obtener el código</small>
+                </div>
+            </div>
+        </article>
+    </dialog>
 
-    <!-- Message Modals -->
+    <!-- Modales de webhook -->
+    <dialog id="modalGetWebhook" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-bell"></i> Webhook</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <p><strong>URL</strong></p>
+                <div class="box-alert" id="getWebhookContainer"></div>
+                <p><strong>Eventos</strong></p>
+                <div class="box-alert" id="getWebhookContainerEvents"></div>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cerrar</button>
+            </footer>
+        </article>
+    </dialog>
 
-    <div class="ui modal" id="modalSendTextMessage"><i class="close icon"></i>
-      <div class="header"> Enviar Mensaje de Texto </div>
-      <div class="content">
-        <div class="ui message info hidden" id="sendMessageContainer"></div>
-        <div class="ui form">
-          <div class="field"><label>Teléfono</label><input id="messagesendphone" type="text" placeholder="Escribe número de teléfono"></div>
-          <div class="field"><label>Mensaje</label><textarea id="messagesendtext"></textarea></div>
-        </div>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-        <div class="ui positive right labeled icon button">Enviar<i class="checkmark icon"></i></div>
-      </div>
-    </div>
+    <dialog id="modalSetWebhook">
+        <article>
+            <header>
+                <span><i class="fas fa-bell"></i> Guardar webhook</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-field">
+                    <label for="webhookinput">URL del webhook</label>
+                    <input id="webhookinput" type="url" placeholder="https://tu-servidor.com/webhook">
+                </div>
+                <fieldset>
+                    <legend>Eventos que recibirá</legend>
+                    <div class="box-check-group box-check-group-stack" id="webhookEvents">
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="Message"> Mensaje</label>
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="ReadReceipt"> Recibo de lectura</label>
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="Presence"> Presencia</label>
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="HistorySync"> Sincronización de historial</label>
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="ChatPresence"> Presencia en chat</label>
+                        <label class="box-check"><input type="checkbox" name="webhookEvent" value="All"> Todos</label>
+                    </div>
+                </fieldset>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cancelar</button>
+                <button data-wsp-aprobar>Guardar webhook</button>
+            </footer>
+        </article>
+    </dialog>
 
-     <div class="ui modal" id="modalDeleteMessage"><i class="close icon"></i>
-      <div class="header"> Eliminar Mensaje </div>
-      <div class="content">
-        <div class="ui message info hidden" id="deleteMessageContainer"></div>
-        <div class="ui form">
-          <div class="field"><label>Teléfono</label><input id="messagedeletephone" type="text" placeholder="Escribe número de teléfono"></div>
-          <div class="field"><label>ID del Mensaje</label><input id="messagedeleteid" type="text" placeholder="Escribe el ID del mensaje"></div>
-        </div>
-      </div>
-      <div class="actions">
-        <div class="ui cancel button">Cerrar</div>
-        <div class="ui positive right labeled icon button">Eliminar<i class="trash icon"></i></div>
-      </div>
-    </div>
+    <dialog id="modalDeleteWebhook" class="box-modal-sm box-modal-danger box-modal-center">
+        <article>
+            <header>
+                <span><i class="fas fa-triangle-exclamation"></i> ¿Eliminar webhook?</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <p>Dejarás de recibir eventos y mensajes en la URL actual.</p>
+            </div>
+            <footer>
+                <button class="outline secondary" data-wsp-denegar>Cancelar</button>
+                <button class="box-btn-danger" data-wsp-aprobar>Eliminar webhook</button>
+            </footer>
+        </article>
+    </dialog>
 
-   
-  </div>
+    <!-- Modales de usuario -->
+    <dialog id="modalUserInfo" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-user"></i> Consultar usuario</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-alert wsp-oculto" id="userInfoContainer"></div>
+                <div class="box-field">
+                    <label for="userinfoinput">Teléfono</label>
+                    <input id="userinfoinput" type="text" placeholder="Número con código de país" inputmode="tel">
+                </div>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cerrar</button>
+                <button data-wsp-aprobar>Consultar usuario</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <dialog id="modalUserAvatar" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-image"></i> Ver avatar</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-alert wsp-oculto" id="userAvatarContainer"></div>
+                <div class="box-field">
+                    <label for="useravatarinput">Teléfono</label>
+                    <input id="useravatarinput" type="text" placeholder="Número con código de país" inputmode="tel">
+                </div>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cerrar</button>
+                <button data-wsp-aprobar>Ver avatar</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <!-- Modales de chat -->
+    <dialog id="modalSendTextMessage" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-paper-plane"></i> Enviar mensaje de texto</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-alert wsp-oculto" id="sendMessageContainer"></div>
+                <div class="box-field">
+                    <label for="messagesendphone">Teléfono</label>
+                    <input id="messagesendphone" type="text" placeholder="Número con código de país" inputmode="tel">
+                </div>
+                <div class="box-field">
+                    <label for="messagesendtext">Mensaje</label>
+                    <textarea id="messagesendtext" rows="4"></textarea>
+                </div>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cerrar</button>
+                <button data-wsp-aprobar>Enviar mensaje</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <dialog id="modalDeleteMessage" class="box-modal-sm">
+        <article>
+            <header>
+                <span><i class="fas fa-eraser"></i> Eliminar mensaje</span>
+                <button class="close" data-box-close aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="box-alert wsp-oculto" id="deleteMessageContainer"></div>
+                <div class="box-field">
+                    <label for="messagedeletephone">Teléfono</label>
+                    <input id="messagedeletephone" type="text" placeholder="Número con código de país" inputmode="tel">
+                </div>
+                <div class="box-field">
+                    <label for="messagedeleteid">ID del mensaje</label>
+                    <input id="messagedeleteid" type="text" placeholder="ID que devolvió el envío">
+                </div>
+            </div>
+            <footer>
+                <button class="outline secondary" data-box-close>Cerrar</button>
+                <button class="box-btn-danger" data-wsp-aprobar>Eliminar mensaje</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <!-- Sin defer: la página abre un modal mientras se parsea -->
+    <script src="/assets/js/wsp-dialog.js"></script>
 <script>
 
   let baseUrl = window.location.origin;
@@ -329,18 +382,18 @@
             if(data.success==true) {
               pairPhone(phone)
                 .then((data) => {
-                  document.getElementById('pairHelp').classList.add('hidden');;
+                  document.getElementById('pairHelp').classList.add('wsp-oculto');;
                   // Success case
                   if (data.success && data.data && data.data.LinkingCode) {
-                    document.getElementById('pairInfo').innerHTML = `Your link code is: ${data.data.LinkingCode}`;
+                    document.getElementById('pairInfo').innerHTML = `Tu código de emparejamiento es: ${data.data.LinkingCode}`;
                     scanInterval = setInterval(checkStatus, 1000);
                   } else {
-                    document.getElementById('pairInfo').innerHTML = "Problem getting pairing code";
+                    document.getElementById('pairInfo').innerHTML = "No se pudo obtener el código de emparejamiento";
                   }
                 })
                 .catch((error) => {
                   // Error case
-                  document.getElementById('pairInfo').innerHTML = "Problem getting pairing code";
+                  document.getElementById('pairInfo').innerHTML = "No se pudo obtener el código de emparejamiento";
                   console.error('Pairing error:', error);
                 });
             }
@@ -372,75 +425,73 @@
     });
 
     document.getElementById('authWidget').addEventListener('click', function() {
-      $('#modalAuthenticate').modal({closable:false}).modal('show');
+      // Con token válido se puede cerrar (Esc o clic fuera); sin él, el modal es obligatorio.
+      wspDialog('#modalAuthenticate', {fijo: !token}).mostrar();
     });
 
     document.getElementById('loginCode').addEventListener('click', function() {
-      $('#modalLoginWithCode').modal({
-        onVisible: function() {
-          document.getElementById('pairInfo').classList.remove('hidden');;
-          document.getElementById('pairHelp').classList.remove('hidden');;
+      wspDialog('#modalLoginWithCode', {
+        alMostrar: function() {
+          document.getElementById('pairInfo').classList.remove('wsp-oculto');;
+          document.getElementById('pairHelp').classList.remove('wsp-oculto');;
         },
-        onHidden: function() {
+        alOcultar: function() {
           if(scanned==true) {
-              document.getElementById('loginQR').classList.add('hidden');
-              document.getElementById('loginCode').classList.add('hidden');
-              document.getElementById('logoutWidget').classList.remove('hidden');
+              document.getElementById('loginQR').classList.add('wsp-oculto');
+              document.getElementById('loginCode').classList.add('wsp-oculto');
+              document.getElementById('logoutWidget').classList.remove('wsp-oculto');
           }
         }
-      })
-      .modal('show');
+      }).mostrar();
     });
   
     document.getElementById('userInfo').addEventListener('click', function() {
       document.getElementById('userInfoContainer').innerHTML='';
-      document.getElementById("userInfoContainer").classList.add('hidden');
-      $('#modalUserInfo').modal({onApprove: function() {
+      document.getElementById("userInfoContainer").classList.add('wsp-oculto');
+      wspDialog('#modalUserInfo', {alAprobar: function() {
         doUserInfo();
         return false;
-      }}).modal('show');
+      }}).mostrar();
     });
   
     document.getElementById('userAvatar').addEventListener('click', function() {
       document.getElementById('userAvatarContainer').innerHTML='';
-      document.getElementById("userAvatarContainer").classList.add('hidden');
-      $('#modalUserAvatar').modal({onApprove: function() {
+      document.getElementById("userAvatarContainer").classList.add('wsp-oculto');
+      wspDialog('#modalUserAvatar', {alAprobar: function() {
         doUserAvatar();
         return false;
-      }}).modal('show');
+      }}).mostrar();
     });
  
     document.getElementById('sendTextMessage').addEventListener('click', function() {
       document.getElementById('sendMessageContainer').innerHTML='';
-      document.getElementById("sendMessageContainer").classList.add('hidden');
-      $('#modalSendTextMessage').modal({onApprove: function() {
+      document.getElementById("sendMessageContainer").classList.add('wsp-oculto');
+      wspDialog('#modalSendTextMessage', {alAprobar: function() {
         sendTextMessage().then((result)=>{
-          document.getElementById("sendMessageContainer").classList.remove('hidden');
           if(result.success===true) {
-             document.getElementById('sendMessageContainer').innerHTML=`Message sent successfully. Id: ${result.data.Id}`
+             mostrarResultado('sendMessageContainer', true, `Mensaje enviado. ID: ${result.data.Id}`);
           } else {
-             document.getElementById('sendMessageContainer').innerHTML=`Problem sending message: ${result.error}`
+             mostrarResultado('sendMessageContainer', false, `No se envió el mensaje: ${result.error}`);
           }
         });
         return false;
-      }}).modal('show');
+      }}).mostrar();
     });
  
     document.getElementById('deleteMessage').addEventListener('click', function() {
       document.getElementById('deleteMessageContainer').innerHTML='';
-      document.getElementById("deleteMessageContainer").classList.add('hidden');
-      $('#modalDeleteMessage').modal({onApprove: function() {
+      document.getElementById("deleteMessageContainer").classList.add('wsp-oculto');
+      wspDialog('#modalDeleteMessage', {alAprobar: function() {
         deleteMessage().then((result)=>{
           console.log(result);
-          document.getElementById("deleteMessageContainer").classList.remove('hidden');
           if(result.success===true) {
-             document.getElementById('deleteMessageContainer').innerHTML=`Message deleted successfully.`
+             mostrarResultado('deleteMessageContainer', true, 'Mensaje eliminado.');
           } else {
-             document.getElementById('deleteMessageContainer').innerHTML=`Problem deleting message: ${result.error}`
+             mostrarResultado('deleteMessageContainer', false, `No se eliminó el mensaje: ${result.error}`);
           }
         });
         return false;
-      }}).modal('show');
+      }}).mostrar();
     });
   
     document.getElementById('userContacts').addEventListener('click', function() {
@@ -452,35 +503,40 @@
     });
 
     document.getElementById('deleteWebhook').addEventListener('click', function() {
-    $('#modalDeleteWebhook')
-      .modal({
-        closable: true,
-        onDeny: function(){
-          return true;
-        },
-        onApprove: function() {
+      wspDialog('#modalDeleteWebhook', {
+        alAprobar: function() {
           deleteWebhook().then((response)=>{
             if(response.success==true) {
-              $.toast({ class: 'success', message: `Webhook deleted successfully !` });
+              boxToast('Webhook eliminado', 'success');
             } else {
-              $.toast({ class: 'error', message: `could not delete webhook! ${response.error}` });
+              boxToast(`No se eliminó el webhook: ${response.error}`, 'error');
             }
           });
         }
-      })
-      .modal('show');
+      }).mostrar();
     });
     document.getElementById('setWebhook').addEventListener('click', function() {
-      $('#modalSetWebhook').modal({onApprove: function() {
+      wspDialog('#modalSetWebhook', {alAprobar: function() {
         setWebhook().then((result)=>{
           if(result.success===true) {
-             $.toast({ class: 'success', message: `Webhook set successfully !`});
+             boxToast('Webhook guardado', 'success');
           } else {
-             $.toast({ class: 'error', message: `Problem setting webhook: ${result.error}`});
+             boxToast(`No se guardó el webhook: ${result.error}`, 'error');
           }
         });
         return true;
-      }}).modal('show');
+      }}).mostrar();
+    });
+
+    // Casillas de eventos: "Todos" marca o desmarca el resto, y desmarcar
+    // cualquier evento desmarca "Todos".
+    document.getElementById('webhookEvents').addEventListener('change', function(e) {
+      const casillas = document.querySelectorAll('#webhookEvents input[name="webhookEvent"]');
+      if (e.target.value === 'All') {
+        casillas.forEach(c => { c.checked = e.target.checked; });
+      } else if (!e.target.checked) {
+        document.querySelector('#webhookEvents input[value="All"]').checked = false;
+      }
     });
 
  
@@ -519,7 +575,7 @@
  
   async function setWebhook() {
     const webhook = document.getElementById('webhookinput').value.trim();
-    const events = $('#webhookEvents').dropdown('get value')
+    const events = Array.from(document.querySelectorAll('#webhookEvents input[name="webhookEvent"]:checked')).map(c => c.value);
     if (events.includes("All")) {
       events.length = 0;
       events.push("All");
@@ -556,10 +612,10 @@
         phone = phone.includes('@') ? phone.split('@')[0] + '@s.whatsapp.net' : phone + '@s.whatsapp.net';
       }
       userAvatar(phone).then((data) => {
-        document.getElementById("userAvatarContainer").classList.remove('hidden');
+        document.getElementById("userAvatarContainer").classList.remove('wsp-oculto');
         if (data.success && data.data && data.data.url) {
           const userAvatarDiv = document.getElementById('userAvatarContainer');
-          userAvatarDiv.innerHTML=`<img src="${data.data.url}" alt="Profile Picture" class="user-avatar">`;
+          userAvatarDiv.innerHTML=`<img src="${data.data.url}" alt="Profile Picture" class="wsp-avatar">`;
         } else {
             document.getElementById('userAvatarContainer').innerHTML = 'No user avatar found';
         }
@@ -578,7 +634,7 @@
         phone = phone.includes('@') ? phone.split('@')[0] + '@s.whatsapp.net' : phone + '@s.whatsapp.net';
       }
       userInfo(phone).then((data) => {
-        document.getElementById("userInfoContainer").classList.remove('hidden');
+        document.getElementById("userInfoContainer").classList.remove('wsp-oculto');
         if (data.success && data.data && data.data.Users) {
             // Clear previous results
             const userInfoDiv = document.getElementById('userInfoContainer');
@@ -617,40 +673,49 @@
   }
 
   function QRLogin() {
-    $('#modalLoginQR').modal({
-    onVisible: function () {
+    wspDialog('#modalLoginQR', {
+    alMostrar: function () {
       connect().then((data) => {
         if(data.success==true) {
           showQr();
         } else {
-          document.getElementById("incorrectstatus").innerHTML = "Could not connect";
-          document.getElementById('loginQR').classList.remove('hidden');
-          document.getElementById('loginCode').classList.remove('hidden');
+          document.getElementById("incorrectstatus").innerHTML = "No se pudo conectar";
+          document.getElementById('loginQR').classList.remove('wsp-oculto');
+          document.getElementById('loginCode').classList.remove('wsp-oculto');
         }
       }); 
     },
-    onHidden: function() {
+    alOcultar: function() {
       console.log("QR modal hidden");
       if(scanned==true) {
-          document.getElementById('loginQR').classList.add('hidden');
-          document.getElementById('loginCode').classList.add('hidden');
-          document.getElementById('logoutWidget').classList.remove('hidden');
+          document.getElementById('loginQR').classList.add('wsp-oculto');
+          document.getElementById('loginCode').classList.add('wsp-oculto');
+          document.getElementById('logoutWidget').classList.remove('wsp-oculto');
       } else {
           clearInterval(scanInterval);
       }
     }
-    }).modal('show');
+    }).mostrar();
+  }
+
+  // Muestra el resultado de una acción dentro del propio modal
+  // (verde si salió bien, rojo si falló).
+  function mostrarResultado(id, ok, texto) {
+    const caja = document.getElementById(id);
+    caja.classList.remove('box-alert-success', 'box-alert-danger', 'wsp-oculto');
+    caja.classList.add(ok ? 'box-alert-success' : 'box-alert-danger');
+    caja.textContent = texto;
   }
 
   function showWidgets() {
-    document.querySelectorAll('.widget').forEach(widget => {
-      widget.classList.remove('hidden');
+    document.querySelectorAll('.wsp-requiere-sesion').forEach(widget => {
+      widget.classList.remove('wsp-oculto');
     });
   }
 
   function hideWidgets() {
-    document.querySelectorAll('.widget').forEach(widget => {
-      widget.classList.add('hidden');
+    document.querySelectorAll('.wsp-requiere-sesion').forEach(widget => {
+      widget.classList.add('wsp-oculto');
     });
   }
 
@@ -660,15 +725,15 @@
       if(status.success==true) {
         if(status.data.loggedIn === true) {
           scanned = true;
-          document.getElementById("connectstatus").innerHTML = "Connected!";
-          document.getElementById("connectstatus").classList.remove('red');
-          document.getElementById("connectstatus").classList.add('green');
-          document.getElementById("connectstatus").classList.remove('hidden');
+          document.getElementById("connectstatus").innerHTML = "Conectado";
+          document.getElementById("connectstatus").classList.remove('box-alert-danger');
+          document.getElementById("connectstatus").classList.add('box-alert-success');
+          document.getElementById("connectstatus").classList.remove('wsp-oculto');
           clearInterval(scanInterval);
           showWidgets();
 
-          $('#modalLoginQR').modal('hide');
-          $('#modalLoginWithCode').modal('hide');
+          wspDialog('#modalLoginQR').ocultar();
+          wspDialog('#modalLoginWithCode').ocultar();
 
         }
       } else {
@@ -685,7 +750,7 @@
     console.log("showQr");
     while (!scanned) {
       console.log("not scanned");
-      if (!$('#modalLoginQR').is(':visible')) { console.log("qr modal closed, do nothing"); return; }
+      if (!wspDialog('#modalLoginQR').abierto()) { console.log("qr modal closed, do nothing"); return; }
       var qrData = await getQr();
       if(qrData.success==true) {
         var qrString = qrData.data.QRCode;
@@ -703,8 +768,8 @@
       } else {
         scanned = true;
         clearInterval(scanInterval);
-        document.getElementById("connectstatus").innerHTML = "Timeout! Please try again when you are ready to scan the QR code";
-        $('#modalLoginQR').modal('hide');
+        document.getElementById("connectstatus").innerHTML = "Se agotó el tiempo. Vuelve a intentarlo cuando estés listo para escanear el código QR.";
+        wspDialog('#modalLoginQR').ocultar();
       }
     }
   }
@@ -766,9 +831,9 @@
          webhook = data.data.webhook
          events = data.data.subscribe.join(",")
       } else {
-         webhook = `Problem getting webhook: ${error}`
+         webhook = "No se pudo obtener el webhook"
       }
-      $('#modalGetWebhook').modal('show');
+      wspDialog('#modalGetWebhook').mostrar();
       document.getElementById('getWebhookContainer').innerHTML=webhook;
       document.getElementById('getWebhookContainerEvents').innerHTML=events;
     } catch (error) {
@@ -941,8 +1006,8 @@
   }
 
   if(notoken==1) {
-    document.getElementById("connectstatus").innerHTML = "No auth token specified";
-    $('#modalAuthenticate').modal({closable:false}).modal('show');
+    document.getElementById("connectstatus").innerHTML = "Falta el token de acceso";
+    wspDialog('#modalAuthenticate', {fijo: true}).mostrar();
   } else {
 
     token = param["token"][0];
@@ -960,53 +1025,35 @@
               if(status.data.connected === false) {
                   connect().then((data) => {console.log("promise connect 2"); console.log(data);});
               }
-              document.getElementById("connectstatus").innerHTML = "Connected!";
-              document.getElementById("connectstatus").classList.remove('red');
-              document.getElementById("connectstatus").classList.add('green');
-              document.getElementById("connectstatus").classList.remove('hidden');
-              document.getElementById('logoutWidget').classList.remove('hidden');
-              document.getElementById('loginQR').classList.add('hidden');
-              document.getElementById('loginCode').classList.add('hidden');
+              document.getElementById("connectstatus").innerHTML = "Conectado";
+              document.getElementById("connectstatus").classList.remove('box-alert-danger');
+              document.getElementById("connectstatus").classList.add('box-alert-success');
+              document.getElementById("connectstatus").classList.remove('wsp-oculto');
+              document.getElementById('logoutWidget').classList.remove('wsp-oculto');
+              document.getElementById('loginQR').classList.add('wsp-oculto');
+              document.getElementById('loginCode').classList.add('wsp-oculto');
               scanned = true;
               showWidgets();
           }
       } else if(status.success==false) {
           if(status.error=="No session") {
-              document.getElementById('loginQR').classList.remove('hidden');
-              document.getElementById('loginCode').classList.remove('hidden');
-              document.getElementById('connectstatus').classList.add('hidden');
+              document.getElementById('loginQR').classList.remove('wsp-oculto');
+              document.getElementById('loginCode').classList.remove('wsp-oculto');
+              document.getElementById('connectstatus').classList.add('wsp-oculto');
           } else if(status.error=="Unauthorized") {
-              document.getElementById("incorrectstatus").innerHTML = `Bad Authentication`;
-              document.getElementById("connectstatus").innerHTML = "Invalid Token";
-              document.getElementById('connectstatus').classList.remove('hidden');
-              document.getElementById('invalidCredentials').classList.remove('hidden');
-              $('#modalAuthenticate').modal({closable:false}).modal('show');
+              document.getElementById("incorrectstatus").innerHTML = "Token inválido";
+              document.getElementById("connectstatus").innerHTML = "Token inválido";
+              document.getElementById('connectstatus').classList.remove('wsp-oculto');
+              document.getElementById('invalidCredentials').classList.remove('wsp-oculto');
+              wspDialog('#modalAuthenticate', {fijo: true}).mostrar();
           }
       } else {
-          document.getElementById("connectstatus").innerHTML = `Bad Authentication ${status.Status}`;
-          document.getElementById('connectstatus').classList.remove('hidden');
+          document.getElementById("connectstatus").innerHTML = `Error de autenticación ${status.Status}`;
+          document.getElementById('connectstatus').classList.remove('wsp-oculto');
       }
       return;
     });
 }
-
-$(document).ready(function() {
-  $('#webhookEvents').dropdown({
-    onChange: function(value, text, $selectedItem) {
-      if (value.includes('All')) {
-        // If "All" is selected, select all other options
-        $('#webhookEvents').dropdown('set selected', [
-          'Message', 
-          'ReadReceipt', 
-          'Presence', 
-          'HistorySync', 
-          'ChatPresence', 
-          'All'
-        ]);
-      }
-    }
-  });
-});
 
 </script>
 </body>

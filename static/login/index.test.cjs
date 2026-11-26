@@ -34,7 +34,7 @@ async function runStatus(source, data) {
         return elements.get(id);
       },
     },
-    $: selector => ({ modal: action => calls.push(`${selector}:${action}`) }),
+    wspDialog: selector => ({ ocultar: () => calls.push(`${selector}:ocultar`) }),
   });
   vm.runInContext(source, context);
   // Flush the status promise callback.
@@ -51,7 +51,7 @@ test('connected unpaired session opens QR without displaying connected widgets',
 test('authenticated session displays connected widgets', async () => {
   const { calls, elements, context } = await runStatus(initialStatus, { connected: true, loggedIn: true });
   assert.deepEqual(calls, ['widgets']);
-  assert.equal(elements.get('connectstatus').innerHTML, 'Connected!');
+  assert.equal(elements.get('connectstatus').innerHTML, 'Conectado');
   assert.equal(context.scanned, true);
 });
 
@@ -60,6 +60,6 @@ test('polling recognizes completed pairing and closes login modals', async () =>
     connected: true, loggedIn: true,
   });
   assert.equal(context.scanned, true);
-  assert.equal(elements.get('connectstatus').innerHTML, 'Connected!');
-  assert.deepEqual(calls, ['stopPolling', 'widgets', '#modalLoginQR:hide', '#modalLoginWithCode:hide']);
+  assert.equal(elements.get('connectstatus').innerHTML, 'Conectado');
+  assert.deepEqual(calls, ['stopPolling', 'widgets', '#modalLoginQR:ocultar', '#modalLoginWithCode:ocultar']);
 });

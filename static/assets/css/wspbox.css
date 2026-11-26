@@ -46,3 +46,80 @@
     color: var(--box-brand-600);
     font-weight: 600;
 }
+
+/* ------------------------------------------------------------
+   Login (static/login/index.html)
+   ------------------------------------------------------------ */
+
+/* Oculta un elemento desde JavaScript (classList). Va sin capa, así
+   que gana al display de .box-alert y de los grupos. */
+.wsp-oculto {
+    display: none;
+}
+
+.wsp-grupo {
+    margin-block-end: 1.5rem;
+}
+
+/* Tarjeta de acción: es un <article> (BoxUI lo estiliza como card) con
+   un botón dentro cuyo área clicable se estira a toda la tarjeta
+   (.box-stretch-host + .box-stretch-link). */
+.wsp-widget h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+}
+
+.wsp-widget p {
+    margin: 0;
+}
+
+.wsp-widget:hover {
+    border-color: var(--box-brand-500);
+}
+
+.wsp-widget:focus-within {
+    outline: 2px solid var(--box-brand-500);
+    outline-offset: 2px;
+}
+
+/* El botón del título no debe verse como botón de formulario */
+.wsp-widget-btn {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-align: start;
+    cursor: pointer;
+}
+
+/* Código QR: marco con el color de marca; la imagen la inserta el script */
+.wsp-qr-body {
+    text-align: center;
+}
+
+.wsp-qr {
+    width: 275px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    margin: 0 auto 1rem;
+    border: 10px solid var(--box-brand-500);
+    border-radius: var(--box-radius);
+    background: var(--box-surface-raised);
+    display: grid;
+    place-items: center;
+}
+
+.wsp-qr img {
+    display: block;
+    width: 100%;
+}
+
+.wsp-avatar {
+    max-width: 100%;
+    border-radius: var(--box-radius);
+}

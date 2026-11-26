@@ -9,7 +9,7 @@ llevar a `main` con un merge cuando se decida, sin tocar el backend.
 | Pantalla | Ruta | Estado |
 |---|---|---|
 | Landing | `/` (`static/index.html`) | Rediseñada con BoxUI (contexto `public`) |
-| Login | `/login` (`static/login/index.html`) | Pendiente: usa Fomantic UI + jQuery (ver abajo) |
+| Login | `/login` (`static/login/index.html`) | Rediseñado con BoxUI (contexto `app`), sin Fomantic ni jQuery |
 | Dashboard | `/dashboard` (`static/dashboard/`) | Pendiente: usa Fomantic UI + jQuery |
 | Docs, API (Swagger), Web Client | `/docs`, `/api`, `/client/` | Fuera del alcance |
 
@@ -28,6 +28,7 @@ static/
       box-ui.js               Comportamiento de BoxUI (tema, modales, toasts)
       box-nav.js              Navbar y drawer móvil de la landing
       box-motion.js           Reveal/stagger (copiado; la landing no lo usa)
+      wsp-dialog.js           Modales del login sobre <dialog> (ver "Modales del login")
     lib/fontawesome/          Iconos locales (sin CDN)
 docs/diseno-ui.md             Este archivo
 ```
@@ -72,10 +73,38 @@ traer `main` a la rama (`git merge origin/main`) para resolver choques de HTML q
 `main` haya cambiado, y comprobar que `node --test static/login/index.test.cjs`
 sigue pasando. Con Autodeploy activo en Dokploy, el merge a `main` despliega.
 
-## Por qué el login y el dashboard siguen pendientes
+## Modales del login
 
-Ambos están construidos con Fomantic UI y jQuery desde CDN, y su JavaScript depende
-de esas librerías (en el login, unas 25 llamadas a `.modal()` y `.dropdown()` con
-callbacks). Cambiar solo el HTML a BoxUI rompería el flujo del código QR y los
-formularios. Rediseñarlos exige también sustituir esas llamadas por `<dialog>` de
-BoxUI, que es un cambio de comportamiento y no solo de imagen.
+El login usaba `$('#id').modal({...}).modal('show')` de Fomantic. Ahora cada modal es
+un `<dialog>` de BoxUI y `assets/js/wsp-dialog.js` ofrece el mismo comportamiento:
+
+```js
+wspDialog('#modalSendTextMessage', {
+  alAprobar: function () { /* ... */ return false; }  // false = el modal sigue abierto
+}).mostrar();
+wspDialog('#modalLoginQR').ocultar();
+wspDialog('#modalLoginQR').abierto();   // true/false
+```
+
+- Botón que aprueba: `data-wsp-aprobar`; que deniega: `data-wsp-denegar`; que solo
+  cierra: `data-box-close` (lo resuelve `box-ui.js`).
+- `{fijo: true}` (modal del token): no se cierra con Esc ni con clic fuera. Chrome no
+  deja cancelar Esc antes de que la persona interactúe con la página, por eso el helper
+  reabre el modal si se cierra por una vía distinta de `ocultar()`.
+- Elementos ocultos desde JS: clase `wsp-oculto` (no `hidden`). Los grupos que
+  requieren sesión de WhatsApp llevan `wsp-requiere-sesion`.
+- Los toasts usan `boxToast(mensaje, 'success' | 'error')`.
+- Los eventos del webhook son casillas (`#webhookEvents`), no un dropdown; "Todos"
+  marca y desmarca el resto.
+- `static/login/index.test.cjs` simula `wspDialog`; si cambia su API, actualizar el test.
+
+Cómo probar el login en local: compilar `go build -o wuzapi.exe .`, ejecutarlo con
+`WUZAPI_ADMIN_TOKEN` y `WUZAPI_GLOBAL_ENCRYPTION_KEY` de prueba desde una carpeta
+vacía, crear un usuario con `POST /admin/users` y abrir `/login/?token=<token>`. El
+servidor genera un QR real; la sesión de WhatsApp no se completa sin escanearlo.
+
+## Pendiente: dashboard
+
+`static/dashboard/` (y `history.html`) siguen con Fomantic UI y jQuery desde CDN, con
+unas 4.800 líneas de JS acopladas a esas librerías. Es una fase aparte: exige el mismo
+reemplazo de modales, dropdowns y demás componentes, y probarlo función por función.
