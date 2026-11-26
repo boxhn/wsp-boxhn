@@ -662,7 +662,7 @@
       : '';
     if (result.passkeyPending)
       tell(
-        'WhatsApp solicita una passkey. Completá el proceso desde el dashboard de WuzAPI.',
+        'WhatsApp solicita una passkey. Completá el proceso desde el dashboard de WspBox.',
       );
   }
   async function pair() {
@@ -799,7 +799,7 @@
     <section class="welcome-story">
       <a class="brand" href="../"
         ><span class="brand-mark">w<span>·</span></span><span
-          >WuzAPI <small>WEB CLIENT</small></span
+          >WspBox <small>WEB CLIENT</small></span
         ></a
       >
       <div class="welcome-copy">
@@ -807,7 +807,7 @@
         <h1>Un espacio para<br />seguir en contacto.</h1>
         <p>
           Chats, grupos y notas de voz.<br />Tu WhatsApp, conectado a tu propia
-          instancia de WuzAPI.
+          instancia de WspBox.
         </p>
         <div class="welcome-tags">
           <span><Icon name="chat" size={16} />Conversaciones</span><span
@@ -824,14 +824,14 @@
       <div class="login-card">
         <div class="mini-label">HOLA DE NUEVO</div>
         <h2>Conectá tu instancia</h2>
-        <p>Usá el token de un usuario de WuzAPI.</p>
+        <p>Usá el token de un usuario de WspBox.</p>
         <form onsubmit={connect}>
           <label
             >URL del servidor<input
               type="url"
               bind:value={serverURL}
               required
-              placeholder="https://wuzapi.example.com"
+              placeholder="https://wsp.example.com"
               autocomplete="url"
             /></label
           >
@@ -865,13 +865,13 @@
           está vinculado, podrás escanear el QR al ingresar.</small
         >
       </div>
-      <span class="login-version">WuzAPI Web · Svelte · Autoalojado</span>
+      <span class="login-version">WspBox Web · Svelte · Autoalojado</span>
     </section>
   </main>
 {:else}
   <main class="workspace" class:chat-open={!!selected}>
     <nav class="rail" aria-label="Navegación principal">
-      <a class="rail-brand" href="../" title="WuzAPI">w<span>·</span></a>
+      <a class="rail-brand" href="../" title="WspBox">w<span>·</span></a>
       <div class="rail-links">
         <button
           class:active={mode === 'chats'}
@@ -1156,7 +1156,7 @@
                 >{/if}
               <p class="privacy-note">
                 <Icon name="lock" size={12} />Tus mensajes se consultan
-                directamente en tu servidor WuzAPI.
+                directamente en tu servidor WspBox.
               </p>
               {#each visibleMessages as message, i (message.message_id)}
                 {#if i === 0 || day(visibleMessages[i - 1].timestamp) !== day(message.timestamp)}<div
@@ -1330,7 +1330,7 @@
                 ? 'Enviando…'
                 : readOnlyHint ||
                   'Enter para enviar · Shift + Enter para una nueva línea'}</span
-            ><span>{demo ? 'DEMO' : 'WUZAPI'}</span>
+            ><span>{demo ? 'DEMO' : 'WSPBOX'}</span>
           </div>
         </footer>
       {:else}
@@ -1355,7 +1355,7 @@
           <button class="primary" onclick={() => (modal = 'new')}
             ><Icon name="plus" size={18} />Nueva conversación</button
           ><small
-            ><Icon name="lock" size={13} />Conectado directamente a tu WuzAPI</small
+            ><Icon name="lock" size={13} />Conectado directamente a tu WspBox</small
           >
         </div>
       {/if}
@@ -1383,7 +1383,7 @@
         <span class="eyebrow">TU INSTANCIA</span>
         <h2 id="modal-title">Historial y sincronización</h2>
         <p>
-          El cliente muestra los mensajes guardados por WuzAPI. No modifica tus
+          El cliente muestra los mensajes guardados por WspBox. No modifica tus
           webhooks.
         </p>
         <form onsubmit={saveHistory}>
@@ -1494,7 +1494,7 @@
         >
         <p class="form-note">
           Si WhatsApp solicita una passkey, completá la vinculación en el
-          dashboard de WuzAPI. La sincronización puede tardar unos minutos.
+          dashboard de WspBox. La sincronización puede tardar unos minutos.
         </p>
         <button class="text-button" onclick={() => (modal = 'settings')}
           >Configurar historial antes de vincular</button

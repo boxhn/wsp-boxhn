@@ -26,7 +26,7 @@ export const demoGroups = [
       { JID: '5491155550102@s.whatsapp.net' },
     ],
   },
-  { JID: '120363000000002@g.us', Name: 'Comunidad WuzAPI', Participants: [] },
+  { JID: '120363000000002@g.us', Name: 'Comunidad WspBox', Participants: [] },
 ];
 export const demoMessages = [
   row(
