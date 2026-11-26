@@ -1026,6 +1026,69 @@ paths:
           description: S3 is not enabled or configuration error
         500:
           description: S3 connection test failed
+  /session/client-access:
+    get:
+      tags:
+        - Session
+      summary: Get restricted web client access
+      description: "With the user token returns the configuration and the client token. With a client token returns only its permissions (Restricted true)."
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Current configuration (Configured false when none exists)
+        '401':
+          description: Invalid token or access disabled
+    post:
+      tags:
+        - Session
+      summary: Create or update restricted web client access
+      description: "Creates a client token (cl_...) with everything closed and the history cutoff set to now, or updates it. Omitted fields keep their value. User token only; a client token receives 403."
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Enabled:
+                  type: boolean
+                AllowContacts:
+                  type: boolean
+                AllowGroups:
+                  type: boolean
+                AllowHistory:
+                  type: boolean
+                  description: "Turning it off resets the cutoff, so only new messages are visible."
+                AllowHistoryConfig:
+                  type: boolean
+                AllowDeleteHistory:
+                  type: boolean
+                ResetHistorySince:
+                  type: boolean
+                RegenerateToken:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration saved
+        '400':
+          description: Invalid body
+        '403':
+          description: Not available with a client token
+    delete:
+      tags:
+        - Session
+      summary: Revoke restricted web client access
+      description: Deletes the access and its client token. User token only.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Access revoked
+        '403':
+          description: Not available with a client token
   /session/history:
     post:
       tags:
@@ -2224,6 +2287,34 @@ paths:
             application/json:
               schema:
                 example: { "code": 200, "data": { "Details": "Chat presence set successfuly" }, "success": true } 
+  /chat/history/delete:
+    post:
+      tags:
+        - Chat
+      summary: Delete stored chat history
+      description: "Deletes messages from the history stored by this service (not from the phone or WhatsApp). With a client token it needs the AllowDeleteHistory permission and only deletes what that client can see. Send chat_jid or all, not both."
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat_jid:
+                  type: string
+                  example: "5491155553333@s.whatsapp.net"
+                all:
+                  type: boolean
+                  description: Delete every visible conversation.
+      responses:
+        '200':
+          description: "Deleted count, as {Deleted: N}"
+        '400':
+          description: Neither or both of chat_jid and all
+        '403':
+          description: Not permitted for this client token
   /chat/history:
     get:
       tags:

@@ -328,7 +328,7 @@ func (s *server) deleteUserAndHistory(userID string) error {
 	if _, err = tx.Exec(tx.Rebind("DELETE FROM message_history WHERE user_id=?"), userID); err != nil {
 		return err
 	}
-	for _, table := range []string{"send_queue", "send_queue_config"} {
+	for _, table := range []string{"send_queue", "send_queue_config", "client_access"} {
 		if _, err = tx.Exec(tx.Rebind("DELETE FROM "+table+" WHERE user_id=?"), userID); err != nil {
 			return err
 		}

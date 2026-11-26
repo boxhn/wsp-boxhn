@@ -418,3 +418,17 @@ Cuerpo (`application/json`):
 
 Errores: `400` (campos faltantes o JID inválido), `500` (sin sesión o no conectado).
 
+### POST `/chat/history/delete`
+
+**Borra mensajes del historial guardado por WspBox**
+
+No elimina nada del teléfono ni de WhatsApp. Con un token de cliente solo borra lo que ese cliente puede ver y
+requiere el permiso `AllowDeleteHistory` (ver [../client-access.md](../client-access.md)).
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `chat_jid` | string | uno de los dos | Borra solo esa conversación |
+| `all` | boolean | uno de los dos | `true` borra todas las conversaciones visibles |
+
+Respuesta: `{"Deleted": N}` con el número de mensajes borrados. Errores: `400` (ni `chat_jid` ni `all`, o los dos),
+`403` (sin permiso, o conversación de grupo con los grupos ocultos).

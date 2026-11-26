@@ -50,6 +50,9 @@ La ruta HTTP enlaza con la referencia del mismo endpoint en [api/](api/README.md
 | `session.hmac.config.get` | GET | `/session/hmac/config` |
 | `session.hmac.config.delete` | DELETE | `/session/hmac/config` |
 | `session.sendqueue.config` | POST | `/session/sendqueue/config` |
+| `session.client-access.get` | GET | `/session/client-access` |
+| `session.client-access.set` | POST | `/session/client-access` |
+| `session.client-access.delete` | DELETE | `/session/client-access` |
 | `session.sendqueue.config.get` | GET | `/session/sendqueue/config` |
 | `chat.queue.list` | GET | `/chat/queue` |
 | `chat.send.raw` | POST | `/chat/send/raw` |
@@ -88,6 +91,7 @@ La ruta HTTP enlaza con la referencia del mismo endpoint en [api/](api/README.md
 | `chat.download.document` | POST | `/chat/downloaddocument` |
 | `chat.conversations,` | GET | `/chat/ + strings.TrimPrefix(req.Method, chat.)` |
 | `chat.history` | GET | `/chat/history?chat_jid= + chatJID` |
+| `chat.history.delete` | POST | `/chat/history/delete` |
 | `user.contacts` | GET | `/user/contacts` |
 | `user.presence` | POST | `/user/presence` |
 | `user.business-profile` | POST | `/user/business-profile` |

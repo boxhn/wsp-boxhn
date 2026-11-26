@@ -65,7 +65,11 @@ func (s *server) routes() {
 	adminRoutes.Handle("/proxy-pool/{id}", s.DeleteProxyPoolEntry()).Methods("DELETE")
 
 	c := alice.New()
+	// Orden: clientAccessAuth traduce un token de cliente al del usuario ANTES de authalice;
+	// clientAccessGuard limita lo que puede hacer un token de cliente DESPUÉS (client_access.go).
+	c = c.Append(s.clientAccessAuth)
 	c = c.Append(s.authalice)
+	c = c.Append(s.clientAccessGuard)
 	c = c.Append(hlog.NewHandler(routerLog))
 
 	c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
@@ -144,6 +148,10 @@ func (s *server) routes() {
 	s.router.Handle("/chat/queue", c.Then(s.ListSendQueue())).Methods("GET")
 	s.router.Handle("/chat/queue/{id}", c.Then(s.CancelSendQueueItem())).Methods("DELETE")
 	s.router.Handle("/chat/history", c.Then(s.GetHistory())).Methods("GET")
+	s.router.Handle("/session/client-access", c.Then(s.GetClientAccess())).Methods("GET")
+	s.router.Handle("/session/client-access", c.Then(s.SetClientAccess())).Methods("POST")
+	s.router.Handle("/session/client-access", c.Then(s.DeleteClientAccess())).Methods("DELETE")
+	s.router.Handle("/chat/history/delete", c.Then(s.DeleteClientHistory())).Methods("POST")
 	s.router.Handle("/chat/conversations", c.Then(s.ListConversations())).Methods("GET")
 	s.router.Handle("/chat/messages", c.Then(s.ListChatMessages())).Methods("GET")
 	s.router.Handle("/chat/send/voice", c.Then(s.sendQueueGate(s.SendVoiceRecording()))).Methods("POST")

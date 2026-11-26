@@ -74,12 +74,17 @@ func (s *server) ListConversations() http.HandlerFunc {
 			TextContent string    `db:"text_content" json:"text_content"`
 		}
 		chats := []conversation{}
+		// Con token de cliente solo se listan los chats y mensajes que ese cliente puede
+		// ver (ver clientVisibility en client_access.go); el dueño lo ve todo.
+		visibility, visibilityArgs := clientVisibility(clientPolicyFrom(r))
 		query := s.db.Rebind(`SELECT chat_jid, message_id, sender_jid, timestamp, message_type, text_content FROM (
     SELECT chat_jid, message_id, sender_jid, timestamp, message_type, text_content, id,
       ROW_NUMBER() OVER (PARTITION BY chat_jid ORDER BY timestamp DESC, id DESC) AS position
-    FROM message_history WHERE user_id = ?
+    FROM message_history WHERE user_id = ?` + visibility + `
    ) AS ranked WHERE position = 1 ORDER BY timestamp DESC, id DESC LIMIT ? OFFSET ?`)
-		if err := s.db.SelectContext(r.Context(), &chats, query, r.Context().Value("userinfo").(Values).Get("Id"), limit+1, offset); err != nil {
+		queryArgs := append([]interface{}{r.Context().Value("userinfo").(Values).Get("Id")}, visibilityArgs...)
+		queryArgs = append(queryArgs, limit+1, offset)
+		if err := s.db.SelectContext(r.Context(), &chats, query, queryArgs...); err != nil {
 			s.Respond(w, r, http.StatusInternalServerError, errors.New("could not list conversations"))
 			return
 		}
@@ -108,10 +113,16 @@ func (s *server) ListChatMessages() http.HandlerFunc {
 			return
 		}
 		user := r.Context().Value("userinfo").(Values).Get("Id")
+		policy := clientPolicyFrom(r)
+		if policy != nil && !policy.AllowGroups && isGroupChat(chat) {
+			s.Respond(w, r, http.StatusForbidden, errors.New("groups are disabled for this client access"))
+			return
+		}
+		visibility, visibilityArgs := clientVisibility(policy)
 		query := `SELECT id, user_id, chat_jid, sender_jid, message_id, timestamp, sent_at, message_type, text_content, media_link,
     COALESCE(quoted_message_id, '') AS quoted_message_id, COALESCE(datajson, '') AS datajson
-    FROM message_history WHERE user_id = ? AND chat_jid = ?`
-		args := []interface{}{user, chat}
+    FROM message_history WHERE user_id = ? AND chat_jid = ?` + visibility
+		args := append([]interface{}{user, chat}, visibilityArgs...)
 		if value := r.URL.Query().Get("before"); value != "" {
 			id, parseErr := strconv.Atoi(value)
 			if parseErr != nil || id < 1 {

@@ -263,3 +263,30 @@ Gets status from connection, including websocket connection and logged in status
 
 Autenticación: token de usuario (cabecera `token`).
 
+### GET · POST · DELETE `/session/client-access`
+
+**Gestiona el acceso restringido del cliente web (`/client/`)**
+
+Crea un token de cliente (`cl_...`) distinto del token del usuario y define qué puede hacer quien lo use.
+Guía completa: [../client-access.md](../client-access.md).
+
+- `GET`: con el token del usuario devuelve la configuración y el token; con el token de cliente solo devuelve
+  `{"Restricted":true,...}` con sus permisos.
+- `POST`: crea el acceso (todo cerrado, fecha de corte = ahora) o actualiza. Solo token de usuario.
+- `DELETE`: revoca el acceso y borra el token. Solo token de usuario.
+
+| Campo (POST) | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `Enabled` | boolean | no | Activa o desactiva el token sin borrarlo |
+| `AllowContacts` | boolean | no | Permite `/user/contacts` |
+| `AllowGroups` | boolean | no | Permite listar/crear grupos y ver sus mensajes |
+| `AllowHistory` | boolean | no | Permite ver el historial anterior; al ponerlo en `false` se reinicia la fecha de corte |
+| `AllowHistoryConfig` | boolean | no | Permite `/session/history` |
+| `AllowDeleteHistory` | boolean | no | Permite `/chat/history/delete` |
+| `ResetHistorySince` | boolean | no | Mueve la fecha de corte a este instante |
+| `RegenerateToken` | boolean | no | Genera otro token; el anterior deja de funcionar |
+
+Los campos omitidos conservan su valor. Errores: `401` (token inválido o acceso desactivado), `403` (un token de
+cliente intentó gestionar el acceso). `DELETE` es idempotente: sin acceso creado también responde `200`.
+
+Autenticación: token de usuario (cabecera `token`); el `GET` también acepta el token de cliente.

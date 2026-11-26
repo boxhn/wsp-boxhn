@@ -153,3 +153,11 @@ Orden de carga de scripts: jQuery, `box-ui.js`, `wsp-dialog.js`, `wsp-compat.js`
 - `history.html`: se verificó que carga y ejecuta el flujo de acceso, pero no la vista de mensajes
   (requiere una instancia con historial activado y datos).
 - jQuery sigue siendo una dependencia del panel; eliminarla exigiría reescribir su lógica.
+
+### Acceso del cliente web (widget `#clientAccessConfig`)
+
+Widget del panel que abre el modal `#modalClientAccess`: crea el token de cliente, marca los permisos
+(contactos, grupos, historial, configurar historial, borrar historial), copia o regenera el token y lo revoca.
+Lógica en `js/clientaccess.js` (carga después de `app.js`); el botón Guardar no lleva la clase `positive`
+para que `wsp-dialog.js` no cierre el modal antes de recibir la respuesta. El cliente web (`webclient/`) lee
+sus permisos con `GET /session/client-access` y oculta lo no permitido. Detalle y API: [client-access.md](client-access.md).

@@ -4,7 +4,7 @@
   proxy, S3, HMAC, historial y gestión de grupos.
   Diseño: BoxUI (contexto "app") + tema en assets/css/wspbox.css + estilos del
   panel en assets/css/wsp-dashboard.css. Sin CDN: todo sale de /assets.
-  Comportamiento: js/app.js, js/groups.js, js/proxypool.js y js/sendqueue.js (lógica con jQuery).
+  Comportamiento: js/app.js, js/groups.js, js/proxypool.js, js/sendqueue.js y js/clientaccess.js (lógica con jQuery).
   Los componentes que antes daba Fomantic UI (modal, dropdown, checkbox, form,
   toast) los da assets/js/wsp-compat.js sobre BoxUI.
   Los ids y clases de gancho (hidden, widget, maingrid, admingrid, logingrid,
@@ -209,6 +209,10 @@
         <h3><button class="box-stretch-link wsp-widget-btn" type="button">Envío pausado</button></h3>
         <p class="box-muted">Envía mensajes en lotes pequeños con pausas para reducir el riesgo de bloqueo.</p>
 
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="clientAccessConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Acceso del cliente web</button></h3>
+        <p class="box-muted">Da a otra persona un acceso limitado al cliente web: tú eliges si ve contactos, grupos e historial.</p>
       </article>
     </div>
 
@@ -701,6 +705,68 @@
       <button class="box-btn secondary cancel" type="button">Cerrar</button>
       <button class="box-btn positive" id="saveSendQueue" type="button">Guardar</button>
     </footer>
+    </article>
+  </dialog>
+
+  <!-- Acceso del cliente web. Lógica: js/clientaccess.js. Docs: docs/client-access.md -->
+  <dialog class="box-modal-lg" id="modalClientAccess">
+    <article>
+      <header><span>Acceso del cliente web</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+        <div class="box-alert">
+          <strong class="wsp-titulo-alerta">Un acceso aparte, con permisos</strong>
+          <p>Crea un token propio para el cliente web. Quien lo use solo podrá hacer lo que actives aquí; tu token de usuario no cambia ni se comparte. Enviar mensajes a un número que ya conoce siempre está permitido.</p>
+        </div>
+
+        <!-- Sin acceso creado -->
+        <div id="caEmpty" class="wsp-seccion">
+          <p>Todavía no has creado un acceso para el cliente web.</p>
+          <button class="box-btn" id="caCreate" type="button">Crear acceso del cliente</button>
+        </div>
+
+        <!-- Con acceso creado -->
+        <div id="caConfigured" class="hidden">
+          <div class="box-field">
+            <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" id="caEnabled" role="switch"> Acceso activo</label></div>
+            <small>Si lo desactivas, el token deja de funcionar sin borrarlo.</small>
+          </div>
+
+          <div class="box-field">
+            <label for="caToken">Token del cliente web</label>
+            <div class="wsp-entrada">
+              <input id="caToken" type="text" readonly>
+              <button class="box-btn box-btn-sm secondary" id="caCopy" type="button">Copiar</button>
+              <button class="box-btn box-btn-sm outline secondary" id="caRegenerate" type="button">Generar otro</button>
+            </div>
+            <small>Entrega este token (y la dirección <strong id="caUrl"></strong>) a quien vaya a usar el cliente. Si lo generas otra vez, el anterior deja de funcionar.</small>
+          </div>
+
+          <fieldset>
+            <legend>Qué puede ver y hacer</legend>
+            <div class="box-check-group box-check-group-stack">
+              <label class="box-check"><input type="checkbox" id="caContacts"> Ver mi lista de contactos</label>
+              <label class="box-check"><input type="checkbox" id="caGroups"> Ver y crear grupos</label>
+              <label class="box-check"><input type="checkbox" id="caHistory"> Ver el historial de conversaciones anterior</label>
+              <label class="box-check"><input type="checkbox" id="caHistoryConfig"> Configurar el historial (cuántos mensajes se guardan y sincronizan)</label>
+              <label class="box-check"><input type="checkbox" id="caDeleteHistory"> Borrar el historial de las conversaciones que puede ver</label>
+            </div>
+          </fieldset>
+
+          <div class="box-alert" id="caSinceBox">
+            <div>
+              <strong class="wsp-titulo-alerta">Solo mensajes nuevos</strong>
+              <p>Con "ver el historial anterior" desactivado, solo verá los mensajes desde <strong id="caSince"></strong>. Los grupos y contactos que no permitas tampoco se mostrarán.</p>
+              <button class="box-btn box-btn-sm outline secondary" id="caResetSince" type="button">Ocultar todo lo anterior a ahora</button>
+            </div>
+          </div>
+
+          <button class="box-btn box-btn-danger box-btn-sm" id="caRevoke" type="button">Revocar acceso</button>
+        </div>
+      </div>
+      <footer>
+        <button class="box-btn secondary cancel" type="button">Cerrar</button>
+        <button class="box-btn hidden" id="caSave" type="button">Guardar permisos</button>
+      </footer>
     </article>
   </dialog>
 
@@ -1566,6 +1632,7 @@
   <script src="js/groups.js"></script>
   <script src="js/proxypool.js?v=proxy-pool-4"></script>
   <script src="js/sendqueue.js?v=send-queue-1"></script>
+  <script src="js/clientaccess.js?v=client-access-1"></script>
 
 </body>
 </html>

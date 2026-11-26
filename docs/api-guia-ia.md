@@ -140,6 +140,7 @@ desvincula el teléfono; `POST /session/disconnect` solo cierra el socket y cons
 | Publicar un estado de texto / rechazar una llamada | `POST /status/set/text` · `POST /call/reject` | [otros](api/otros.md) |
 | Configurar webhook | `/webhook` (POST, GET, PUT, DELETE) | [webhook](api/webhook.md) |
 | Proxy, historial, S3, firma HMAC de la sesión | `/session/{proxy,history,s3/config,hmac/config}` | [session](api/session.md) |
+| Dar a un asistente acceso limitado al cliente web (sin contactos, grupos ni historial) | `/session/client-access` · `POST /chat/history/delete` | [session](api/session.md) · [client-access](client-access.md) |
 | Crear o borrar usuarios, pool de proxies | `/admin/*` | [admin](api/admin.md) |
 
 ## 7. Webhooks y eventos

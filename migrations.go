@@ -123,7 +123,27 @@ var migrations = []Migration{
 		Name:  "add_send_queue",
 		UpSQL: addSendQueueSQL,
 	},
+	{
+		// Acceso restringido del cliente web (ver docs/client-access.md): un token
+		// propio con permisos por usuario. SQL portable (SQLite y PostgreSQL).
+		ID:    19,
+		Name:  "add_client_access",
+		UpSQL: addClientAccessSQL,
+	},
 }
+
+const addClientAccessSQL = `
+CREATE TABLE IF NOT EXISTS client_access (
+	user_id TEXT PRIMARY KEY,
+	client_token TEXT NOT NULL UNIQUE,
+	enabled INTEGER NOT NULL DEFAULT 1,
+	allow_contacts INTEGER NOT NULL DEFAULT 0,
+	allow_groups INTEGER NOT NULL DEFAULT 0,
+	allow_history INTEGER NOT NULL DEFAULT 0,
+	allow_history_config INTEGER NOT NULL DEFAULT 0,
+	allow_delete_history INTEGER NOT NULL DEFAULT 0,
+	history_since BIGINT NOT NULL DEFAULT 0
+);`
 
 const addSendQueueSQL = `
 CREATE TABLE IF NOT EXISTS send_queue_config (

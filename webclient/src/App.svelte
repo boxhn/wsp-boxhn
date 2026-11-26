@@ -76,6 +76,18 @@
   let drafts = {};
   let failedSend;
   let readOnlyHint = '';
+  // Permisos de este acceso. Con el token del usuario (dueño) todo está permitido; con un
+  // token de cliente los define el dueño en el panel. El servidor es quien los aplica:
+  // aquí solo se oculta lo que no se podría usar.
+  const fullAccess = {
+    restricted: false,
+    contacts: true,
+    groups: true,
+    history: true,
+    historyConfig: true,
+    deleteHistory: true,
+  };
+  let access = { ...fullAccess };
 
   $: groupMap = Object.fromEntries(groups.map((g) => [field(g, 'JID'), g]));
   $: selectedGroup = groupMap[selected];
@@ -201,6 +213,7 @@
     groupName = '';
     participants = '';
     readOnlyHint = '';
+    access = { ...fullAccess };
     seen.clear();
     revokePreviews();
     sessionStorage.removeItem('wuzapi-client');
@@ -232,6 +245,8 @@
           JSON.stringify({ serverURL, token, remember }),
         );
       else sessionStorage.removeItem('wuzapi-client');
+      await loadAccess();
+      if (version !== epoch) return;
       if (data.loggedIn) await refreshDirectory();
       if (version !== epoch) return;
       await refreshChats();
@@ -255,6 +270,7 @@
     epoch++;
     clearTimeout(timer);
     demo = true;
+    access = { ...fullAccess };
     authenticated = true;
     status = {
       name: 'Nicolás',
@@ -269,12 +285,70 @@
     historyDisabled = false;
     selectChat('5491155550101@s.whatsapp.net');
   }
+  // Lee los permisos del acceso. Un servidor antiguo (sin este endpoint) o un error
+  // dejan el acceso completo: el servidor sigue siendo quien decide.
+  async function loadAccess() {
+    try {
+      const data = await api.request('/session/client-access');
+      access = data?.Restricted
+        ? {
+            restricted: true,
+            contacts: !!data.AllowContacts,
+            groups: !!data.AllowGroups,
+            history: !!data.AllowHistory,
+            historyConfig: !!data.AllowHistoryConfig,
+            deleteHistory: !!data.AllowDeleteHistory,
+          }
+        : { ...fullAccess };
+    } catch {
+      access = { ...fullAccess };
+    }
+    if (mode === 'contacts' && !access.contacts) mode = 'chats';
+    if (mode === 'groups' && !access.groups) mode = 'chats';
+  }
+  // Borra del historial guardado por WspBox (no del teléfono ni de WhatsApp).
+  async function purgeHistory(all) {
+    if (demo) {
+      tell('En una sesión real, esto borra el historial guardado.');
+      modal = '';
+      return;
+    }
+    actionBusy = true;
+    try {
+      const result = await api.request(
+        '/chat/history/delete',
+        all ? { all: true } : { chat_jid: selected },
+      );
+      const deleted = Number(result?.Deleted || 0);
+      modal = '';
+      if (all) {
+        chats = [];
+        seen.clear();
+        locallyUnread = {};
+        selected = '';
+        chatEpoch++;
+      } else {
+        chats = chats.filter((c) => c.chat_jid !== selected);
+      }
+      rows = [];
+      tell(
+        deleted === 1
+          ? 'Se borró 1 mensaje del historial.'
+          : 'Se borraron ' + deleted + ' mensajes del historial.',
+      );
+      await refreshChats();
+    } catch (e) {
+      report(e);
+    } finally {
+      actionBusy = false;
+    }
+  }
   async function refreshDirectory() {
     const current = api;
     const version = epoch;
     const results = await Promise.allSettled([
-      current.request('/user/contacts'),
-      current.request('/group/list'),
+      access.contacts ? current.request('/user/contacts') : Promise.resolve({}),
+      access.groups ? current.request('/group/list') : Promise.resolve({}),
     ]);
     if (current !== api || version !== epoch) return;
     if (results[0].status === 'fulfilled') contacts = results[0].value || {};
@@ -757,6 +831,11 @@
     };
   }
   function setMode(value) {
+    if (
+      (value === 'contacts' && !access.contacts) ||
+      (value === 'groups' && !access.groups)
+    )
+      return;
     mode = value;
     search = '';
     tab = 'all';
@@ -882,31 +961,31 @@
           ><Icon name="chat" size={23} />{#if unreadCount}<span class="rail-dot"
             ></span>{/if}</button
         >
-        <button
-          class:active={mode === 'contacts'}
-          class="rail-button"
-          title="Contactos"
-          aria-label="Contactos"
-          onclick={() => setMode('contacts')}
-          ><Icon name="person" size={23} /></button
-        >
-        <button
-          class:active={mode === 'groups'}
-          class="rail-button"
-          title="Grupos"
-          aria-label="Grupos"
-          onclick={() => setMode('groups')}
-          ><Icon name="users" size={23} /></button
-        >
+        {#if access.contacts}<button
+            class:active={mode === 'contacts'}
+            class="rail-button"
+            title="Contactos"
+            aria-label="Contactos"
+            onclick={() => setMode('contacts')}
+            ><Icon name="person" size={23} /></button
+          >{/if}
+        {#if access.groups}<button
+            class:active={mode === 'groups'}
+            class="rail-button"
+            title="Grupos"
+            aria-label="Grupos"
+            onclick={() => setMode('groups')}
+            ><Icon name="users" size={23} /></button
+          >{/if}
       </div>
       <div class="rail-bottom">
-        <button
-          class="rail-button"
-          title="Configuración de historial"
-          aria-label="Configuración de historial"
-          onclick={() => (modal = 'settings')}
-          ><Icon name="settings" size={23} /></button
-        ><button
+        {#if access.historyConfig}<button
+            class="rail-button"
+            title="Configuración de historial"
+            aria-label="Configuración de historial"
+            onclick={() => (modal = 'settings')}
+            ><Icon name="settings" size={23} /></button
+          >{/if}<button
           class="profile"
           title="Cerrar el cliente"
           aria-label="Cerrar el cliente"
@@ -926,12 +1005,20 @@
                 : 'Conversaciones'}<span class="count">{directory.length}</span>
           </h1>
         </div>
-        <button
-          class="icon-button new-chat"
-          title={mode === 'groups' ? 'Crear grupo' : 'Nueva conversación'}
-          aria-label={mode === 'groups' ? 'Crear grupo' : 'Nueva conversación'}
-          onclick={() => (modal = mode === 'groups' ? 'group' : 'new')}
-          ><Icon name="plus" /></button
+        <span class="header-actions"
+          >{#if access.deleteHistory && mode === 'chats'}<button
+              class="icon-button"
+              title="Borrar historial"
+              aria-label="Borrar historial"
+              onclick={() => (modal = 'purge')}
+              ><Icon name="trash" /></button
+            >{/if}<button
+            class="icon-button new-chat"
+            title={mode === 'groups' ? 'Crear grupo' : 'Nueva conversación'}
+            aria-label={mode === 'groups' ? 'Crear grupo' : 'Nueva conversación'}
+            onclick={() => (modal = mode === 'groups' ? 'group' : 'new')}
+            ><Icon name="plus" /></button
+          ></span
         >
       </div>
       <label class="search-box"
@@ -950,10 +1037,10 @@
             class:chosen={tab === 'unread'}
             onclick={() => (tab = 'unread')}
             >Nuevos {#if unreadCount}<span>{unreadCount}</span>{/if}</button
-          ><button
-            class:chosen={tab === 'groups'}
-            onclick={() => (tab = 'groups')}>Grupos</button
-          >
+          >{#if access.groups}<button
+              class:chosen={tab === 'groups'}
+              onclick={() => (tab = 'groups')}>Grupos</button
+            >{/if}
         </div>{:else}<p class="directory-note">
           {mode === 'contacts'
             ? 'La agenda sincronizada de tu WhatsApp.'
@@ -995,7 +1082,9 @@
             <p>
               {historyDisabled
                 ? 'Activá el historial para guardar tus mensajes.'
-                : 'Abrí un contacto o iniciá una conversación.'}
+                : access.restricted && !access.history
+                  ? 'Aquí aparecen los mensajes nuevos. Para escribir a alguien, inicia una conversación con su número.'
+                  : 'Abrí un contacto o iniciá una conversación.'}
             </p>
           </div>{/each}
         {#if moreChats && mode === 'chats'}<button
@@ -1056,9 +1145,10 @@
           <Icon name="history" size={18} /><span
             >El historial está desactivado. Activá el almacenamiento para ver y
             recibir conversaciones en este cliente.</span
-          ><button class="text-button" onclick={() => (modal = 'settings')}
-            >Configurar</button
-          >
+          >{#if access.historyConfig}<button
+              class="text-button"
+              onclick={() => (modal = 'settings')}>Configurar</button
+            >{/if}
         </div>{/if}
       {#if !online && !demo}<div class="banner">
           <Icon name="info" size={18} /><span
@@ -1105,14 +1195,20 @@
                 showMessageSearch = !showMessageSearch;
                 messageSearch = '';
               }}><Icon name="search" /></button
-            ><button
-              class="icon-button"
-              title="Recuperar historial del teléfono"
-              aria-label="Recuperar historial del teléfono"
-              onclick={recoverHistory}
-              disabled={actionBusy || historyDisabled}
-              ><Icon name="history" /></button
-            ><button
+            >{#if access.historyConfig}<button
+                class="icon-button"
+                title="Recuperar historial del teléfono"
+                aria-label="Recuperar historial del teléfono"
+                onclick={recoverHistory}
+                disabled={actionBusy || historyDisabled}
+                ><Icon name="history" /></button
+              >{/if}{#if access.deleteHistory}<button
+                class="icon-button"
+                title="Borrar historial de esta conversación"
+                aria-label="Borrar historial de esta conversación"
+                onclick={() => (modal = 'purge')}
+                ><Icon name="trash" /></button
+              >{/if}<button
               class="icon-button"
               title="Información del chat"
               aria-label="Información del chat"
@@ -1418,6 +1514,25 @@
           ><Icon name="logout" size={16} />Cerrar este cliente (sin desvincular
           WhatsApp)</button
         >
+      {:else if modal === 'purge'}
+        <span class="eyebrow">HISTORIAL</span>
+        <h2 id="modal-title">Borrar historial</h2>
+        <p>
+          Se borran los mensajes guardados por WspBox para este cliente. No se
+          eliminan del teléfono ni de WhatsApp. Esta acción no se puede deshacer.
+        </p>
+        {#if selected}<button
+            class="primary full"
+            disabled={actionBusy}
+            onclick={() => purgeHistory(false)}
+            >{actionBusy ? 'Borrando…' : 'Borrar esta conversación'}</button
+          >{/if}
+        <button
+          class="text-button"
+          disabled={actionBusy}
+          onclick={() => purgeHistory(true)}
+          >Borrar todas las conversaciones que puedo ver</button
+        >
       {:else if modal === 'new'}
         <span class="eyebrow">SEGUIMOS EN CONTACTO</span>
         <h2 id="modal-title">Nueva conversación</h2>
@@ -1443,13 +1558,13 @@
             /></button
           >
         </form>
-        <button
-          class="text-button"
-          onclick={() => {
-            modal = '';
-            setMode('contacts');
-          }}>Ver mis contactos</button
-        >
+        {#if access.contacts}<button
+            class="text-button"
+            onclick={() => {
+              modal = '';
+              setMode('contacts');
+            }}>Ver mis contactos</button
+          >{/if}
       {:else if modal === 'group'}
         <span class="eyebrow">UN LUGAR PARA EL EQUIPO</span>
         <h2 id="modal-title">Crear un grupo</h2>
@@ -1496,9 +1611,11 @@
           Si WhatsApp solicita una passkey, completá la vinculación en el
           dashboard de WspBox. La sincronización puede tardar unos minutos.
         </p>
-        <button class="text-button" onclick={() => (modal = 'settings')}
-          >Configurar historial antes de vincular</button
-        >
+        {#if access.historyConfig}<button
+            class="text-button"
+            onclick={() => (modal = 'settings')}
+            >Configurar historial antes de vincular</button
+          >{/if}
       {/if}
       {#if error}<p class="inline-error modal-error" role="alert">
           {error}
