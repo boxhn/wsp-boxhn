@@ -4,7 +4,7 @@
   proxy, S3, HMAC, historial y gestión de grupos.
   Diseño: BoxUI (contexto "app") + tema en assets/css/wspbox.css + estilos del
   panel en assets/css/wsp-dashboard.css. Sin CDN: todo sale de /assets.
-  Comportamiento: js/app.js, js/groups.js y js/proxypool.js (lógica con jQuery).
+  Comportamiento: js/app.js, js/groups.js, js/proxypool.js y js/sendqueue.js (lógica con jQuery).
   Los componentes que antes daba Fomantic UI (modal, dropdown, checkbox, form,
   toast) los da assets/js/wsp-compat.js sobre BoxUI.
   Los ids y clases de gancho (hidden, widget, maingrid, admingrid, logingrid,
@@ -203,7 +203,12 @@
       <article class="box-stretch-host wsp-widget widget hidden" id="hmacConfig">
         <h3><button class="box-stretch-link wsp-widget-btn" type="button">HMAC Key</button></h3>
         <p class="box-muted">Configure HMAC key for webhook security.</p>
-        
+
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="sendQueueConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Paced Sending</button></h3>
+        <p class="box-muted">Send messages in small batches with pauses to reduce ban risk.</p>
+
       </article>
     </div>
 
@@ -615,6 +620,86 @@
       <button class="box-btn secondary cancel" type="button">Cancel</button>
       <button class="box-btn box-btn-danger" id="deleteHmacConfig" type="button">Delete Configuration</button>
       <button class="box-btn positive" id="saveHmacConfig" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
+
+  <!-- Paced Sending (send queue) Modal. Lógica: js/sendqueue.js. Docs: docs/send-queue.md -->
+  <dialog class="box-modal-lg" id="modalSendQueue">
+    <article>
+      <header><span> Paced Sending </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta">Send in batches with pauses</strong>
+        <p>When enabled, every send request is queued (HTTP 202) and goes out in small batches with random pauses and an hourly cap. This lowers the risk of WhatsApp flagging the number, but does not remove it.</p>
+      </div>
+      <div class="wsp-form">
+        <div class="box-field">
+          <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" id="sqEnabled" role="switch"> Enable paced sending</label></div>
+        </div>
+        <div class="box-field">
+          <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" id="sqPaused" role="switch"> Pause (keep queued messages, send nothing)</label></div>
+        </div>
+        <div class="box-grid form-grid-2">
+          <div class="box-field">
+            <label>Messages per batch</label>
+            <input type="number" id="sqBatchSize" min="1" max="50" value="3">
+          </div>
+          <div class="box-field">
+            <label>Hourly cap (messages)</label>
+            <input type="number" id="sqHourlyCap" min="1" max="10000" value="60">
+          </div>
+        </div>
+        <div class="box-grid form-grid-2">
+          <div class="box-field">
+            <label>Pause between messages: min (s)</label>
+            <input type="number" id="sqMsgDelayMin" min="0" value="5">
+          </div>
+          <div class="box-field">
+            <label>Pause between messages: max (s)</label>
+            <input type="number" id="sqMsgDelayMax" min="0" value="15">
+          </div>
+        </div>
+        <div class="box-grid form-grid-2">
+          <div class="box-field">
+            <label>Pause between batches: min (s)</label>
+            <input type="number" id="sqBatchPauseMin" min="0" value="60">
+          </div>
+          <div class="box-field">
+            <label>Pause between batches: max (s)</label>
+            <input type="number" id="sqBatchPauseMax" min="0" value="180">
+          </div>
+        </div>
+      </div>
+
+      <h4 class="box-divider box-divider-start">Queued messages</h4>
+      <div class="box-btn-group mb-4">
+        <select id="sqStatusFilter" aria-label="Status filter">
+          <option value="">All</option>
+          <option value="pending" selected>Pending</option>
+          <option value="sent">Sent</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="box-btn secondary" id="sqRefresh" type="button"><i class="fas fa-rotate"></i> Refresh</button>
+      </div>
+      <table class="box-fields-table" id="sq-table">
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Tries</th>
+            <th>Message Id</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sq-body"></tbody>
+      </table>
+    </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" id="saveSendQueue" type="button">Save</button>
     </footer>
     </article>
   </dialog>
@@ -1480,6 +1565,7 @@
   <script src="js/app.js?v=conversation-tools-1"></script>
   <script src="js/groups.js"></script>
   <script src="js/proxypool.js?v=proxy-pool-4"></script>
+  <script src="js/sendqueue.js?v=send-queue-1"></script>
 
 </body>
 </html>

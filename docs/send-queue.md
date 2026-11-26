@@ -53,6 +53,14 @@ Los campos omitidos toman el valor por defecto (la llamada reemplaza la polític
 `/chat/send/edit` **no** se encola (sale directo). Con la cola activa la respuesta del
 envío ya no trae el `Id` de WhatsApp: se obtiene del evento o de `GET /chat/queue` (`MessageId`).
 
+## Desde el dashboard
+
+En el panel del usuario, sección **Configuration → Paced Sending** (widget `#sendQueueConfig`).
+El modal permite activar/pausar, editar lote, pausas y tope por hora, y ver los mensajes en
+cola (filtro por estado, botón **Cancel** en los pendientes). Es solo una pantalla sobre los
+endpoints de arriba: HTML en `static/dashboard/index.html` (`#modalSendQueue`) y lógica en
+`static/dashboard/js/sendqueue.js`.
+
 ## Mapa de archivos
 
 | Archivo | Responsabilidad |
