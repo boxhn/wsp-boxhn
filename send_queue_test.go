@@ -1,4 +1,4 @@
-// send_queue_test.go — Pruebas de la cola de envío pausado (docs/send-queue.md).
+// send_queue_test.go — Pruebas de la cola de envío pausado (static/guia/send-queue.md).
 //
 // Usan makeTestServer (SQLite en memoria) y un reloj/sleep falsos: no esperan
 // segundos reales ni necesitan una cuenta de WhatsApp. El envío real se

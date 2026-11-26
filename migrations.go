@@ -117,14 +117,14 @@ var migrations = []Migration{
 		UpSQL: `ALTER TABLE message_history ALTER COLUMN sent_at TYPE TIMESTAMPTZ USING sent_at AT TIME ZONE 'UTC';`,
 	},
 	{
-		// Cola de envío pausado (ver docs/send-queue.md). SQL portable entre
+		// Cola de envío pausado (ver static/guia/send-queue.md). SQL portable entre
 		// SQLite y PostgreSQL: fechas como segundos Unix (BIGINT) y flags como INTEGER.
 		ID:    18,
 		Name:  "add_send_queue",
 		UpSQL: addSendQueueSQL,
 	},
 	{
-		// Acceso restringido del cliente web (ver docs/client-access.md): un token
+		// Acceso restringido del cliente web (ver static/guia/client-access.md): un token
 		// propio con permisos por usuario. SQL portable (SQLite y PostgreSQL).
 		ID:    19,
 		Name:  "add_client_access",

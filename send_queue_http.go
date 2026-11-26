@@ -7,7 +7,7 @@
 // s.ListSendQueue, s.CancelSendQueueItem.
 // Depende de: send_queue.go (BD), send_queue_worker.go (wakeSendQueue), authalice
 // (el usuario viaja en el contexto bajo "userinfo").
-// Documentación: docs/send-queue.md.
+// Documentación: static/guia/send-queue.md.
 //
 // Limitación: los medios viajan en base64 dentro del cuerpo, así que se limita
 // el tamaño de lo que se encola (sendQueueMaxBody).

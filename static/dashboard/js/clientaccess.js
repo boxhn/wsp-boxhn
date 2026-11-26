@@ -9,7 +9,7 @@
  * Depende de: jQuery y el puente wsp-compat.js (modales), y de las funciones globales de
  * app.js: baseUrl, getLocalStorageItem, showError, showSuccess.
  * Orden de carga: después de app.js (ver index.html).
- * API que usa: GET/POST/DELETE /session/client-access (ver docs/client-access.md).
+ * API que usa: GET/POST/DELETE /session/client-access (ver static/guia/client-access.md).
  *
  * Nota: la configuración se hace con el token del usuario (dueño). El token de cliente
  * no puede llegar aquí: el servidor responde 403.

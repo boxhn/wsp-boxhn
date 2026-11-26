@@ -228,8 +228,8 @@ Ante la duda, **gana el código**:
 
 ## 11. Mantener esta documentación
 
-- `docs/api/*.md` es una **instantánea** de `static/api/spec.yml` más tres endpoints escritos desde el
+- `static/guia/api/*.md` es una **instantánea** de `static/api/spec.yml` más tres endpoints escritos desde el
   código. Al cambiar el spec o `routes.go`, actualiza el grupo afectado y la tabla de la sección 6.
-- `docs/api-stdio.md` sale de `routeRequest` en `stdio.go`.
+- `static/guia/api-stdio.md` sale de `routeRequest` en `stdio.go`.
 - Más contexto del servicio: [`../README.md`](../README.md), [`../API.md`](../API.md) (ejemplos `curl`
   extensos) y [`../AGENTS.md`](../AGENTS.md) (guía para quien modifica el código).

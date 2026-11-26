@@ -8,7 +8,7 @@ WuzAPI is a Go service that exposes WhatsApp functionality through an HTTP REST 
 
 Use `go.mod` as the source of truth for Go and dependency versions. The current Go version is 1.26.0. WuzAPI relies on the pinned whatsmeow version; protocol changes can require coordinated dependency and application changes.
 
-To *use* the service from an AI agent (rather than modify it), start with `docs/api-guia-ia.md` (Spanish): authentication, response envelope, recipient formats, bootstrap flow, webhook events and a "what endpoint for what" map, with per-group references in `docs/api/` and the JSON-RPC method table in `docs/api-stdio.md`.
+To *use* the service from an AI agent (rather than modify it), start with `static/guia/api-guia-ia.md` (Spanish): authentication, response envelope, recipient formats, bootstrap flow, webhook events and a "what endpoint for what" map, with per-group references in `static/guia/api/` and the JSON-RPC method table in `static/guia/api-stdio.md`.
 
 ## Development commands
 
@@ -94,7 +94,7 @@ When adding an API feature:
 2. Apply the existing authentication, validation, response conventions, and database abstractions.
 3. Add the explicit method mapping in `stdio.go` when exposing the feature through stdio; verify payload and authentication handling.
 4. Add meaningful regression tests using existing HTTP/stdio helpers and injectable operations where available.
-5. Update the relevant API references (`API.md`, `static/api/spec.yml`, and `static/docs/index.html`), the AI-oriented guide (`docs/api-guia-ia.md`, `docs/api/`, `docs/api-stdio.md`), and dashboard or Postman examples when affected. Check existing documentation for the feature before editing.
+5. Update the relevant API references (`API.md`, `static/api/spec.yml`, and `static/docs/index.html`), the AI-oriented guide (`static/guia/api-guia-ia.md`, `static/guia/api/`, `static/guia/api-stdio.md`), and dashboard or Postman examples when affected. Check existing documentation for the feature before editing.
 6. Format changed Go files and run checks appropriate to the change.
 
 For database changes, inspect `migrations.go` and existing backend-specific behavior. For media changes, preserve temporary-file cleanup, bounded memory use, and shutdown handling. For session changes, inspect the lifecycle and recovery regression tests.

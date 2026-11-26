@@ -160,7 +160,7 @@ Widget del panel que abre el modal `#modalClientAccess`: crea el token de client
 (contactos, grupos, historial, configurar historial, borrar historial), copia o regenera el token y lo revoca.
 Lógica en `js/clientaccess.js` (carga después de `app.js`); el botón Guardar no lleva la clase `positive`
 para que `wsp-dialog.js` no cierre el modal antes de recibir la respuesta. El cliente web (`webclient/`) lee
-sus permisos con `GET /session/client-access` y oculta lo no permitido. Detalle y API: [client-access.md](client-access.md).
+sus permisos con `GET /session/client-access` y oculta lo no permitido. Detalle y API: [client-access.md](../static/guia/client-access.md).
 
 ### Login del panel (selector de rol)
 

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+  Documentación de WspBox (ruta "/guia/").
+  Qué hace: muestra los .md de esta carpeta con formato y menú lateral, y ofrece
+  la guía para que una IA sepa cómo integrarse (enlace directo al .md y botón
+  "Copiar para IA").
+  Archivos: md.js (renderizador), guia.js (navegación), assets/css/wsp-guia.css (estilos).
+  Diseño: BoxUI + wspbox.css; sin CDN. Los ids los usa guia.js: no renombrarlos.
+  Para añadir un documento: copiar el .md aquí y listarlo en NAV de guia.js.
+-->
+<html lang="es" data-theme="light" data-ui-mode="normal" data-ui-context="app">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documentación · WspBox</title>
+  <link rel="icon" href="/images/favicon.png">
+  <script>
+  (function () {
+    var d = document.documentElement;
+    try {
+      d.setAttribute('data-theme', localStorage.getItem('box-theme') || 'light');
+      d.setAttribute('data-ui-mode', localStorage.getItem('box-ui-mode') || 'normal');
+    } catch (e) { /* almacenamiento bloqueado: se queda el valor por defecto */ }
+  })();
+  </script>
+  <link rel="stylesheet" href="/assets/css/vendor.css">
+  <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
+  <link rel="stylesheet" href="/assets/css/wspbox.css">
+  <link rel="stylesheet" href="/assets/css/wsp-guia.css">
+  <script src="/assets/js/box-ui.js" defer></script>
+</head>
+<body>
+  <div class="guia-layout">
+    <aside class="guia-lateral">
+      <a class="guia-marca" href="/"><i class="fab fa-whatsapp"></i> WspBox</a>
+      <nav id="guia-nav" aria-label="Documentos"></nav>
+      <div class="guia-volver"><a href="/dashboard/">&larr; Volver al panel</a></div>
+    </aside>
+
+    <main class="guia-principal">
+      <div class="box-alert guia-ia">
+        <strong class="wsp-titulo-alerta"><i class="fas fa-robot"></i> ¿Vas a integrarlo con una IA?</strong>
+        <p>Dale este enlace: es la guía en texto plano con autenticación, formatos, flujo de arranque y trampas conocidas.</p>
+        <p><code id="guia-url-ia"></code></p>
+      </div>
+
+      <div class="guia-barra">
+        <span id="guia-titulo"></span>
+        <span class="guia-acciones">
+          <button class="box-btn secondary" id="guia-copiar" type="button">Copiar para IA</button>
+          <a class="box-btn secondary" id="guia-crudo" href="api-guia-ia.md" target="_blank" rel="noopener">Ver .md</a>
+        </span>
+      </div>
+
+      <article id="guia-doc" class="guia-doc">Cargando…</article>
+    </main>
+  </div>
+
+  <script src="md.js"></script>
+  <script src="guia.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 // con pausas aleatorias en vez de en ráfaga (reduce el riesgo de baneo).
 // Qué expone: sendQueueConfig, sendQueueItem y los métodos (s *server) sq*.
 // Depende de: migración 18 (migrations.go), s.db (SQLite o PostgreSQL).
-// Documentación: docs/send-queue.md. Los handlers HTTP están en
+// Documentación: static/guia/send-queue.md. Los handlers HTTP están en
 // send_queue_http.go y el worker que envía en send_queue_worker.go.
 //
 // Convenciones: las fechas se guardan como segundos Unix (BIGINT) y los flags

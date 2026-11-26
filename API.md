@@ -460,7 +460,7 @@ curl -s -X DELETE -H 'Authorization: 1234ABCD' http://localhost:8080/session/hma
 
 ## Send Queue (paced sending)
 
-Optional per-user queue that spaces outgoing messages (batches of N, random pauses, hourly cap) to reduce ban risk. When enabled, every `POST /chat/send/*` (except `edit`) returns `202` with a `QueueId` instead of sending immediately; the result arrives through the `QueuedMessageStatus` webhook event. Full guide: [docs/send-queue.md](docs/send-queue.md).
+Optional per-user queue that spaces outgoing messages (batches of N, random pauses, hourly cap) to reduce ban risk. When enabled, every `POST /chat/send/*` (except `edit`) returns `202` with a `QueueId` instead of sending immediately; the result arrives through the `QueuedMessageStatus` webhook event. Full guide: [static/guia/send-queue.md](static/guia/send-queue.md).
 
 - `POST /session/sendqueue/config` — body: `{"Enabled":true,"Paused":false,"BatchSize":3,"MsgDelayMin":5,"MsgDelayMax":15,"BatchPauseMin":60,"BatchPauseMax":180,"HourlyCap":60}` (omitted fields use these defaults)
 - `GET /session/sendqueue/config` — current policy

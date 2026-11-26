@@ -8,7 +8,7 @@
 // handlers GetClientAccess, SetClientAccess, DeleteClientAccess y DeleteClientHistory.
 // Depende de: migración 19 (migrations.go), authalice (handlers.go), handlers_client.go
 // (que filtra conversaciones y mensajes con clientVisibility).
-// Documentación: docs/client-access.md.
+// Documentación: static/guia/client-access.md.
 //
 // Cómo funciona: clientAccessAuth corre ANTES de authalice. Si el token recibido es un
 // token de cliente, lo sustituye por el token real del usuario (así toda la autenticación

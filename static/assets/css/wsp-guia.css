@@ -1,0 +1,129 @@
+/* ============================================================
+   wsp-guia.css · estilos de la documentación (/guia/)
+   ------------------------------------------------------------
+   Qué hace: maqueta menú lateral + documento renderizado desde Markdown.
+   Depende de: BoxUI + wspbox.css cargados antes. Solo tokens --box-*.
+   Se usa desde: static/guia/index.html.
+   ============================================================ */
+.guia-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--box-canvas);
+  color: var(--box-text);
+}
+
+.guia-lateral {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  width: 270px;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 16px 12px;
+  background: var(--box-surface);
+  border-right: 1px solid var(--box-border);
+}
+
+.guia-marca {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--box-brand-600);
+  text-decoration: none;
+}
+
+.guia-lateral h2 {
+  margin: 16px 8px 4px;
+  font-size: .7rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--box-text-subtle);
+}
+
+.guia-lateral nav a {
+  display: block;
+  padding: 6px 10px;
+  border-left: 3px solid transparent;
+  border-radius: var(--box-radius);
+  color: var(--box-text);
+  text-decoration: none;
+  font-size: .9rem;
+}
+
+.guia-lateral nav a:hover { background: var(--box-surface-sunken); }
+
+.guia-lateral nav a.activo {
+  border-left-color: var(--box-brand-500);
+  background: var(--box-surface-sunken);
+  font-weight: 600;
+}
+
+.guia-lateral .guia-externo { margin-top: 12px; color: var(--box-text-subtle); }
+.guia-volver { margin-top: 20px; padding: 0 10px; font-size: .85rem; }
+
+.guia-principal {
+  flex: 1;
+  min-width: 0;
+  max-width: 980px;
+  padding: 24px 32px 64px;
+}
+
+.guia-ia code { word-break: break-all; }
+
+.guia-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--box-text-subtle);
+  font-size: .85rem;
+}
+
+.guia-acciones { display: flex; gap: 8px; }
+
+.guia-doc { line-height: 1.6; }
+.guia-doc h1 { margin: 0 0 16px; font-size: 1.8rem; }
+.guia-doc h2 { margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--box-border); font-size: 1.3rem; }
+.guia-doc h3 { margin: 24px 0 8px; font-size: 1.1rem; }
+.guia-doc h4 { margin: 20px 0 8px; font-size: 1rem; }
+.guia-doc a { color: var(--box-brand-600); }
+.guia-doc ul, .guia-doc ol { padding-left: 24px; }
+
+.guia-doc code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--box-surface-sunken);
+  font-size: .88em;
+}
+
+.guia-doc pre {
+  overflow-x: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--box-border);
+  border-radius: var(--box-radius);
+  background: var(--box-surface-sunken);
+}
+
+.guia-doc pre code { padding: 0; background: none; font-size: .85rem; }
+
+.guia-doc blockquote {
+  margin: 12px 0;
+  padding: 4px 16px;
+  border-left: 4px solid var(--box-brand-500);
+  background: var(--box-surface-sunken);
+  border-radius: var(--box-radius);
+}
+
+.guia-tabla { overflow-x: auto; margin: 12px 0; }
+.guia-tabla table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.guia-tabla th, .guia-tabla td { padding: 8px 10px; border: 1px solid var(--box-border); text-align: left; vertical-align: top; }
+.guia-tabla th { background: var(--box-surface-sunken); }
+
+@media (max-width: 800px) {
+  .guia-layout { flex-direction: column; }
+  .guia-lateral { position: static; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--box-border); }
+  .guia-principal { padding: 16px; }
+}

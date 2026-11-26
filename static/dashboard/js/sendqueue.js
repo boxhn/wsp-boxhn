@@ -8,7 +8,7 @@
  * Depende de: jQuery y el shim de modales (wsp-compat.js), y de las funciones
  * globales de app.js: baseUrl, getLocalStorageItem, showError, showSuccess.
  * Orden de carga: después de app.js (ver index.html).
- * Documentación: docs/send-queue.md.
+ * Documentación: static/guia/send-queue.md.
  *
  * Nota: estos endpoints responden con el sobre estándar
  * {"code":..,"data":{..},"success":true}; el dato útil viene en `data`.

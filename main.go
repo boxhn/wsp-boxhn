@@ -580,7 +580,7 @@ func main() {
 	// Start background cleanup of stale passkey pairing states (needed for both modes)
 	startPasskeyCleanup()
 
-	// Worker de la cola de envío pausado (docs/send-queue.md)
+	// Worker de la cola de envío pausado (static/guia/send-queue.md)
 	startSendQueueWorker(s)
 
 	if serverMode == Stdio {

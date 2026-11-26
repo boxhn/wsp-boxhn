@@ -11,7 +11,7 @@
 // Qué expone: startSendQueueWorker, shutdownSendQueue, wakeSendQueue.
 // Depende de: send_queue.go (BD), send_queue_http.go (sqReplayKey), s.router,
 // sendEventWithWebHook (evento QueuedMessageStatus).
-// Documentación: docs/send-queue.md (cómo depurar y extender).
+// Documentación: static/guia/send-queue.md (cómo depurar y extender).
 //
 // Limitaciones conocidas: el ritmo (nextAt/inBatch) vive en memoria; tras un
 // reinicio el primer mensaje sale sin espera previa. Errores 4xx no se reintentan;
