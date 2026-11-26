@@ -1,4 +1,4 @@
-// Proxy Pool management (admin only)
+// Pool de proxies management (admin only)
 
 let proxyPoolEntries = [];
 let proxyPoolRendered = null; // JSON of the entries currently in the table
@@ -56,7 +56,7 @@ async function loadProxyPool() {
       }
     }
   } catch (error) {
-    console.error('Failed to load proxy pool:', error);
+    console.error('No se cargó el pool de proxies:', error);
   }
 }
 
@@ -79,7 +79,7 @@ function renderProxyPool() {
   tableBody.empty();
 
   if (proxyPoolEntries.length === 0) {
-    tableBody.append('<tr><td style="text-align:center;" colspan=5>No proxies in the pool. Instances connect with their own proxy or directly, as before.</td></tr>');
+    tableBody.append('<tr><td style="text-align:center;" colspan=5>No hay proxies en el pool. Las instancias se conectan con su propio proxy o directo, como antes.</td></tr>');
     return;
   }
 
@@ -92,20 +92,20 @@ function renderProxyPool() {
         <td style="word-break: break-all;"><code>${escapeHtml(entry.proxy_url)}</code></td>
         <td style="min-width: 140px;">
           <div class="box-progress"><span style="--_v:${percent}%"></span></div>
-          ${entry.assigned_count} / ${entry.max_devices}${full ? ' (full)' : ''}
+          ${entry.assigned_count} / ${entry.max_devices}${full ? ' (lleno)' : ''}
         </td>
         <td>
-          <div class="box-badge ${entry.enabled ? 'box-badge-success' : ''}">${entry.enabled ? 'Enabled' : 'Disabled'}</div>
+          <div class="box-badge ${entry.enabled ? 'box-badge-success' : ''}">${entry.enabled ? 'Activado' : 'Desactivado'}</div>
         </td>
         <td>
           <button class="box-btn dashboard-button" onclick="openProxyPoolModal('${entry.id}')">
-            <i class="fas fa-pen-to-square"></i> Edit
+            <i class="fas fa-pen-to-square"></i> Editar
           </button>
           <button class="box-btn ${entry.enabled ? 'secondary' : ''} dashboard-button" onclick="toggleProxyPoolEntry('${entry.id}')">
-            <i class="fas ${entry.enabled ? 'fa-pause' : 'fa-play'}"></i> ${entry.enabled ? 'Disable' : 'Enable'}
+            <i class="fas ${entry.enabled ? 'fa-pause' : 'fa-play'}"></i> ${entry.enabled ? 'Desactivar' : 'Activar'}
           </button>
-          <button class="box-btn box-btn-danger negative dashboard-button" onclick="confirmDeleteProxyPoolEntry('${entry.id}')" ${entry.assigned_count > 0 ? 'disabled title="Release the assigned instances first"' : ''}>
-            <i class="fas fa-trash-can"></i> Delete
+          <button class="box-btn box-btn-danger negative dashboard-button" onclick="confirmDeleteProxyPoolEntry('${entry.id}')" ${entry.assigned_count > 0 ? 'disabled title="Libera primero las instancias asignadas"' : ''}>
+            <i class="fas fa-trash-can"></i> Eliminar
           </button>
         </td>
       </tr>
@@ -119,16 +119,16 @@ function openProxyPoolModal(id) {
   proxyPoolEditingId = entry ? entry.id : null;
 
   setProxyPoolError('#proxyPoolFormError', '');
-  $('#proxyPoolModalTitle').text(entry ? 'Edit Proxy' : 'Add Proxy');
+  $('#proxyPoolModalTitle').text(entry ? 'Editar proxy' : 'Agregar proxy');
   $('#proxyPoolLabel').val(entry ? entry.label : '');
   // The API never returns the proxy password, so editing starts from an empty
   // field and the URL is only sent when the admin types a new one.
   $('#proxyPoolUrl').val('');
-  $('#proxyPoolUrl').attr('placeholder', entry ? entry.proxy_url : 'socks5://user:pass@203.0.113.10:1080 or http://203.0.113.10:3128');
+  $('#proxyPoolUrl').attr('placeholder', entry ? entry.proxy_url : 'socks5://usuario:clave@203.0.113.10:1080 o http://203.0.113.10:3128');
   $('#proxyPoolUrlHelp').text(entry
-    ? 'Leave empty to keep the current URL. A new URL is applied to assigned instances on their next connect.'
-    : 'Only http:// and socks5:// proxies are supported.');
-  $('#proxyPoolUrl').closest('.field').toggleClass('required', !entry);
+    ? 'Déjalo vacío para conservar la URL actual. Una URL nueva se aplica a las instancias asignadas en su próxima conexión.'
+    : 'Solo se admiten proxies http:// y socks5://.');
+  $('#proxyPoolUrl').closest('.box-field').toggleClass('required', !entry);
   $('#proxyPoolMaxDevices').val(entry ? entry.max_devices : 1);
   $('#proxyPoolMaxDevices').attr('min', entry ? Math.max(1, entry.assigned_count) : 1);
   $('#proxyPoolEnabledToggle').checkbox(entry && !entry.enabled ? 'uncheck' : 'check');
@@ -148,15 +148,15 @@ async function saveProxyPoolEntry() {
   const enabled = $('#proxyPoolEnabled').is(':checked');
 
   if (!proxyPoolEditingId && !proxyUrl) {
-    setProxyPoolError('#proxyPoolFormError', 'Proxy URL is required');
+    setProxyPoolError('#proxyPoolFormError', 'La URL del proxy es obligatoria');
     return;
   }
   if (proxyUrl && !/^(http|socks5):\/\/.+/.test(proxyUrl)) {
-    setProxyPoolError('#proxyPoolFormError', 'Proxy URL must start with http:// or socks5://');
+    setProxyPoolError('#proxyPoolFormError', 'La URL del proxy debe empezar con http:// o socks5://');
     return;
   }
   if (!Number.isInteger(maxDevices) || maxDevices < 1) {
-    setProxyPoolError('#proxyPoolFormError', 'Max devices must be at least 1');
+    setProxyPoolError('#proxyPoolFormError', 'El máximo de dispositivos debe ser al menos 1');
     return;
   }
 
@@ -174,10 +174,10 @@ async function saveProxyPoolEntry() {
       setProxyPoolError('#proxyPoolError', '');
       loadProxyPool();
     } else {
-      setProxyPoolError('#proxyPoolFormError', result.error || 'Failed to save proxy');
+      setProxyPoolError('#proxyPoolFormError', result.error || 'No se guardó el proxy');
     }
   } catch (error) {
-    setProxyPoolError('#proxyPoolFormError', 'Failed to save proxy');
+    setProxyPoolError('#proxyPoolFormError', 'No se guardó el proxy');
     console.error('Proxy pool save error:', error);
   }
 }
@@ -191,10 +191,10 @@ async function toggleProxyPoolEntry(id) {
       setProxyPoolError('#proxyPoolError', '');
       loadProxyPool();
     } else {
-      setProxyPoolError('#proxyPoolError', result.error || 'Failed to update proxy');
+      setProxyPoolError('#proxyPoolError', result.error || 'No se actualizó el proxy');
     }
   } catch (error) {
-    setProxyPoolError('#proxyPoolError', 'Failed to update proxy');
+    setProxyPoolError('#proxyPoolError', 'No se actualizó el proxy');
   }
 }
 
@@ -214,10 +214,10 @@ async function deleteProxyPoolEntry(id) {
       setProxyPoolError('#proxyPoolError', '');
       loadProxyPool();
     } else {
-      setProxyPoolError('#proxyPoolError', result.error || 'Failed to delete proxy');
+      setProxyPoolError('#proxyPoolError', result.error || 'No se eliminó el proxy');
     }
   } catch (error) {
-    setProxyPoolError('#proxyPoolError', 'Failed to delete proxy');
+    setProxyPoolError('#proxyPoolError', 'No se eliminó el proxy');
   }
   proxyPoolDeletingId = null;
 }
@@ -240,10 +240,10 @@ async function releaseProxyPool(userId) {
 function instanceProxyLabel(instance) {
   if (instance.proxy_pool_id) {
     const name = proxyPoolEntryName(instance.proxy_pool_id);
-    return `<div class="box-badge box-badge-primary" title="Assigned from the proxy pool"><i class="fas fa-sitemap"></i><span class="proxy-pool-name" data-proxy-pool-id="${instance.proxy_pool_id}">${escapeHtml(name)}</span></div>`;
+    return `<div class="box-badge box-badge-primary" title="Asignado desde el pool de proxies"><i class="fas fa-sitemap"></i><span class="proxy-pool-name" data-proxy-pool-id="${instance.proxy_pool_id}">${escapeHtml(name)}</span></div>`;
   }
   if (instance.proxy_config && instance.proxy_config.enabled) {
-    return '<div class="box-badge box-badge-primary" title="Proxy set on the instance">Custom</div>';
+    return '<div class="box-badge box-badge-primary" title="Proxy propio de la instancia">Propio</div>';
   }
-  return '<span style="color: #888;">None</span>';
+  return '<span style="color: #888;">Ninguno</span>';
 }

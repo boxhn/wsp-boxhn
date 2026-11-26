@@ -1,7 +1,7 @@
 /*
  * sendqueue.js — Dashboard: configuración y vista de la cola de envío pausado.
  *
- * Qué hace: abre el modal "Paced Sending" desde el widget #sendQueueConfig,
+ * Qué hace: abre el modal "Envío pausado" desde el widget #sendQueueConfig,
  * carga y guarda la política de ritmo (GET/POST /session/sendqueue/config) y
  * lista/cancela mensajes en cola (GET /chat/queue, DELETE /chat/queue/{id}).
  * Qué expone: nada global; solo engancha eventos al cargar la página.
@@ -39,7 +39,7 @@
   }
 
   function errorText(body) {
-    return (body && (body.error || body.Details)) || 'Unknown error';
+    return (body && (body.error || body.Details)) || 'Error desconocido';
   }
 
   // ---- Política de ritmo ----
@@ -73,9 +73,9 @@
     try {
       var r = await api('GET', '/session/sendqueue/config');
       if (r.ok && r.body && r.body.data) fillForm(r.body.data);
-      else showError('Could not load paced sending settings: ' + errorText(r.body));
+      else showError('No se cargaron los ajustes del envío pausado: ' + errorText(r.body));
     } catch (e) {
-      showError('Error loading paced sending settings');
+      showError('Error al cargar los ajustes del envío pausado');
       console.error(e);
     }
   }
@@ -84,23 +84,23 @@
     var cfg = readForm();
     // Validación en cliente para dar un mensaje claro; el servidor vuelve a validar.
     if ([cfg.BatchSize, cfg.HourlyCap, cfg.MsgDelayMin, cfg.MsgDelayMax, cfg.BatchPauseMin, cfg.BatchPauseMax].some(isNaN)) {
-      showError('All numeric fields are required');
+      showError('Todos los campos numéricos son obligatorios');
       return;
     }
     if (cfg.MsgDelayMax < cfg.MsgDelayMin || cfg.BatchPauseMax < cfg.BatchPauseMin) {
-      showError('Max pause must be greater than or equal to min pause');
+      showError('La pausa máxima debe ser mayor o igual a la mínima');
       return;
     }
     try {
       var r = await api('POST', '/session/sendqueue/config', cfg);
       if (r.ok && r.body && r.body.success) {
-        showSuccess('Paced sending settings saved');
+        showSuccess('Ajustes del envío pausado guardados');
         $('#modalSendQueue').modal('hide');
       } else {
-        showError('Failed to save settings: ' + errorText(r.body));
+        showError('No se guardaron los ajustes: ' + errorText(r.body));
       }
     } catch (e) {
-      showError('Error saving paced sending settings');
+      showError('Error al guardar los ajustes del envío pausado');
       console.error(e);
     }
   }
@@ -139,7 +139,7 @@
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'box-btn box-btn-danger';
-        btn.textContent = 'Cancel';
+        btn.textContent = 'Cancelar';
         btn.addEventListener('click', function () { cancelItem(it.QueueId); });
         actions.appendChild(btn);
       }
@@ -154,9 +154,9 @@
     try {
       var r = await api('GET', '/chat/queue' + query);
       if (r.ok && r.body && Array.isArray(r.body.data)) renderRows(r.body.data);
-      else showError('Could not load queue: ' + errorText(r.body));
+      else showError('No se cargó la cola: ' + errorText(r.body));
     } catch (e) {
-      showError('Error loading queue');
+      showError('Error al cargar la cola');
       console.error(e);
     }
   }
@@ -165,13 +165,13 @@
     try {
       var r = await api('DELETE', '/chat/queue/' + encodeURIComponent(id));
       if (r.ok) {
-        showSuccess('Message cancelled');
+        showSuccess('Mensaje cancelado');
         loadQueue();
       } else {
-        showError('Could not cancel: ' + errorText(r.body));
+        showError('No se pudo cancelar: ' + errorText(r.body));
       }
     } catch (e) {
-      showError('Error cancelling message');
+      showError('Error al cancelar el mensaje');
       console.error(e);
     }
   }

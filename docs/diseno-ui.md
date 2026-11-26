@@ -142,8 +142,10 @@ Orden de carga de scripts: jQuery, `box-ui.js`, `wsp-dialog.js`, `wsp-compat.js`
 
 ### Pendiente y limitaciones conocidas
 
-- **Textos en inglés:** el panel y el historial conservan sus textos originales; falta traducirlos a
-  español como la landing y el login.
+- **Idioma:** el panel y el historial están en español (tú). Los mensajes de consola (`console.log/error`) y
+  los valores técnicos (nombres de eventos, claves de la API, estados internos) siguen en inglés a propósito.
+  Al añadir un texto nuevo, escríbelo ya en español. Ojo con la lógica que compara textos: el tipo de grupo
+  (`Community`, `Community Group`, `Group`) es un valor interno y solo se traduce al mostrarlo (`etiquetaTipo`).
 - Las etiquetas de color de las tarjetas de acción ("Config", "User"...) se omitieron: el divisor de
   cada grupo ya da ese contexto.
 - La validación del formulario "Add Instance" muestra el primer error como aviso; Fomantic marcaba cada

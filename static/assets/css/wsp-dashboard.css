@@ -148,6 +148,9 @@
 .wsp-entrada { display: flex; gap: 0.5rem; align-items: center; position: relative; }
 .wsp-entrada > input { flex: 1; }
 
+/* Campo obligatorio marcado por el JS con la clase required (Fomantic ponía el asterisco) */
+.box-field.required > label::after { content: " *"; color: var(--box-danger-solid); }
+
 /* ---------- multiselect con búsqueda y alta libre ---------- */
 .wsp-multiselect {
     position: relative;

@@ -51,6 +51,9 @@
                negative/deny/cancel) para no tocar el HTML heredado. */
             var aprobar = e.target.closest('[data-wsp-aprobar], footer .positive, footer .approve, footer .ok');
             if (aprobar && dlg.contains(aprobar)) {
+                /* Un botón type=submit enviaría además el formulario por su cuenta:
+                   alAprobar ya se encarga, así que se evita el doble envío. */
+                if (aprobar.type === 'submit') e.preventDefault();
                 var res = o.alAprobar ? o.alAprobar() : undefined;
                 if (res !== false) dlg.close();
                 return;

@@ -62,7 +62,7 @@ test('recovery captures the original instance ID and uses the admin endpoint', a
   assert.equal(requests[1][2].method, 'DELETE');
   assert.equal(requests[1][2].headers.get('authorization'), 'test-admin-token');
   assert.ok(calls.some(c => c[0] === 'refresh'));
-  assert.ok(calls.some(c => c[0] === 'toast' && c[1].includes('credentials preserved')));
+  assert.ok(calls.some(c => c[0] === 'toast' && c[1].includes('credenciales de WhatsApp')));
 });
 
 test('other failures show the server error without offering recovery', async () => {
@@ -71,7 +71,7 @@ test('other failures show the server error without offering recovery', async () 
     await context.performDelete('id');
     assert.equal(modals.has('#preserveDevicesModal'), false);
     assert.ok(calls.some(c => c[0] === 'error' && c[1] === body.error));
-    assert.equal(classes.get('#deleteInstanceModal .actions .button').has('disabled'), false);
+    assert.equal(classes.get('#deleteInstanceModal footer button').has('disabled'), false);
   }
 });
 
@@ -87,8 +87,8 @@ test('in-flight requests block duplicate submits and cancel; failures allow retr
   reject(new Error('offline'));
   await flush();
   assert.equal(modals.get('#preserveDevicesModal').onDeny(), true);
-  assert.equal(classes.get('#preserveDevicesModal .positive.button').has('loading'), false);
-  assert.ok(calls.some(c => c[0] === 'error' && c[1].includes('try again')));
+  assert.equal(classes.get('#preserveDevicesModal footer .positive').has('loading'), false);
+  assert.ok(calls.some(c => c[0] === 'error' && c[1].includes('inténtalo de nuevo')));
   const retry = context.performDelete('id', true);
   assert.equal(calls.filter(c => c[0] === 'fetch').length, 2);
   reject(new Error('offline'));
@@ -99,5 +99,5 @@ test('ordinary deletion keeps the full endpoint and standard success message', a
   const { context, calls } = setup(() => reply(200, { success: true }));
   await context.performDelete('id/with spaces');
   assert.equal(calls.find(c => c[0] === 'fetch')[1], 'http://localhost/admin/users/id%2Fwith%20spaces/full');
-  assert.ok(calls.some(c => c[0] === 'toast' && c[1] === 'Instance deleted successfully'));
+  assert.ok(calls.some(c => c[0] === 'toast' && c[1] === 'Instancia eliminada'));
 });

@@ -1,4 +1,4 @@
-// Groups Manager JavaScript
+// Administrador de grupos JavaScript
 // Manages all WhatsApp groups functionality
 // 
 // ADMIN PERMISSIONS: Modified to always show admin actions and let backend handle permissions
@@ -23,6 +23,12 @@ function identificarTipo(data) {
 }
 
 // Function to get group type label and icon
+// Texto en español de la etiqueta de tipo. La etiqueta en inglés se conserva como valor interno
+// (data-group-type y comparaciones del filtro); solo se traduce lo que se muestra.
+function etiquetaTipo(label) {
+    return { "Community": "Comunidad", "Community Group": "Grupo de comunidad", "Group": "Grupo" }[label] || label;
+}
+
 function getGroupTypeInfo(groupData) {
     const tipo = identificarTipo(groupData);
     
@@ -32,14 +38,14 @@ function getGroupTypeInfo(groupData) {
                 label: "Community",
                 icon: "building",
                 color: "purple",
-                description: "Main community"
+                description: "Comunidad principal"
             };
         case "COMMUNITY_GROUP":
             return {
                 label: "Community Group",
                 icon: "users",
                 color: "blue",
-                description: "Group within community"
+                description: "Grupo dentro de una comunidad"
             };
         case "NORMAL_GROUP":
         default:
@@ -47,7 +53,7 @@ function getGroupTypeInfo(groupData) {
                 label: "Group",
                 icon: "users",
                 color: "green",
-                description: "Regular group"
+                description: "Grupo normal"
             };
     }
 }
@@ -147,7 +153,7 @@ function initializeGroupsModals() {
         // Show loading state
         button.addClass('loading').prop('disabled', true);
         statusDiv.show().removeClass('success error').addClass('info');
-        statusText.text('Loading contacts...');
+        statusText.text('Cargando contactos…');
         
         try {
             await loadContacts();
@@ -155,7 +161,7 @@ function initializeGroupsModals() {
             
             // Show success state
             statusDiv.removeClass('info').addClass('success');
-            statusText.html('<i class="fas fa-check"></i> Contacts loaded successfully! You can now select participants.');
+            statusText.html('<i class="fas fa-check"></i> Contactos cargados. Ya puedes elegir participantes.');
             
             // Hide status after 3 seconds
             setTimeout(() => {
@@ -165,7 +171,7 @@ function initializeGroupsModals() {
         } catch (error) {
             console.error('Error loading contacts:', error);
             statusDiv.removeClass('info').addClass('error');
-            statusText.html('<i class="fas fa-triangle-exclamation"></i> Failed to load contacts. Please try again.');
+            statusText.html('<i class="fas fa-triangle-exclamation"></i> No se pudieron cargar los contactos. Inténtalo de nuevo.');
         } finally {
             button.removeClass('loading').prop('disabled', false);
         }
@@ -179,14 +185,14 @@ function initializeGroupsModals() {
         
         button.addClass('loading').prop('disabled', true);
         statusDiv.show().removeClass('success error').addClass('info');
-        statusText.text('Loading contacts...');
+        statusText.text('Cargando contactos…');
         
         try {
             await loadContacts();
             populateAddParticipantsDropdown();
             
             statusDiv.removeClass('info').addClass('success');
-            statusText.html('<i class="fas fa-check"></i> Contacts loaded successfully!');
+            statusText.html('<i class="fas fa-check"></i> Contactos cargados.');
             
             setTimeout(() => {
                 statusDiv.fadeOut();
@@ -195,7 +201,7 @@ function initializeGroupsModals() {
         } catch (error) {
             console.error('Error loading contacts:', error);
             statusDiv.removeClass('info').addClass('error');
-            statusText.html('<i class="fas fa-triangle-exclamation"></i> Failed to load contacts. Please try again.');
+            statusText.html('<i class="fas fa-triangle-exclamation"></i> No se pudieron cargar los contactos. Inténtalo de nuevo.');
         } finally {
             button.removeClass('loading').prop('disabled', false);
         }
@@ -314,12 +320,12 @@ async function loadGroups() {
             groupsCache = response.data;
             displayGroups(response.data.Groups || []);
         } else {
-            showError('Failed to load groups: ' + (response.error || 'Unknown error'));
+            showError('No se cargaron los grupos: ' + (response.error || 'Error desconocido'));
             $('#noGroupsMessage').removeClass('hidden');
         }
     } catch (error) {
-        console.error('Error loading groups:', error);
-        showError('Error loading groups');
+        console.error('Error al cargar los grupos:', error);
+        showError('Error al cargar los grupos');
         $('#noGroupsMessage').removeClass('hidden');
     } finally {
         $('#groupsLoading').removeClass('active');
@@ -349,12 +355,12 @@ function formatDisappearingTimer(seconds) {
     
     // WhatsApp specific disappearing message options
     switch (seconds) {
-        case 86400:     // 24 hours
-            return "24 hours";
-        case 604800:    // 7 days
-            return "7 days";
-        case 7776000:   // 90 days
-            return "90 days";
+        case 86400:     // 24 horas
+            return "24 horas";
+        case 604800:    // 7 días
+            return "7 días";
+        case 7776000:   // 90 días
+            return "90 días";
         default:
             // Fallback for any other values
             const days = Math.floor(seconds / 86400);
@@ -384,31 +390,31 @@ function createGroupListItem(group) {
     const createdDate = group.GroupCreated ? new Date(group.GroupCreated).toLocaleDateString('en-US') : 'Unknown';
     
     // Truncate topic if too long
-    const topic = group.Topic || 'No description';
+    const topic = group.Topic || 'Sin descripción';
     const truncatedTopic = truncateText(topic, 100);
     
     // User role badge
     let userRoleBadge = '';
     if (isSuperAdmin) {
-        userRoleBadge = '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>';
+        userRoleBadge = '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Superadministrador</span>';
     } else if (isAdmin) {
-        userRoleBadge = '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>';
+        userRoleBadge = '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Administrador</span>';
     }
     
     // Build features badges
     let featureBadges = '';
     if (group.IsAnnounce) {
-        featureBadges += '<span class="box-badge"><i class="fas fa-bullhorn"></i>Admins only</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-bullhorn"></i>Solo administradores</span>';
     }
     if (group.IsLocked) {
-        featureBadges += '<span class="box-badge"><i class="fas fa-lock"></i>Locked</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-lock"></i>Bloqueado</span>';
     }
     if (group.IsEphemeral && group.DisappearingTimer) {
         const timerText = formatDisappearingTimer(group.DisappearingTimer);
-        featureBadges += `<span class="box-badge"><i class="fas fa-clock"></i>Disappears in ${timerText}</span>`;
+        featureBadges += `<span class="box-badge"><i class="fas fa-clock"></i>Desaparecen en ${timerText}</span>`;
     }
     if (group.IsJoinApprovalRequired) {
-        featureBadges += '<span class="box-badge"><i class="fas fa-check"></i>Approval required</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-check"></i>Requiere aprobación</span>';
     }
     
     // Show linked parent for community groups
@@ -416,7 +422,7 @@ function createGroupListItem(group) {
     if (typeInfo.label === 'Community Group' && group.LinkedParentJID) {
         const parentGroup = groupsCache.Groups ? groupsCache.Groups.find(g => g.JID === group.LinkedParentJID) : null;
         const parentName = parentGroup ? parentGroup.Name : 'Unknown Community';
-        parentInfo = `<div class="meta"><i class="fas fa-sitemap"></i>Part of: ${escapeHtml(parentName)}</div>`;
+        parentInfo = `<div class="meta"><i class="fas fa-sitemap"></i>Parte de: ${escapeHtml(parentName)}</div>`;
     }
     
     return `
@@ -428,14 +434,14 @@ function createGroupListItem(group) {
                 <div class="wsp-col-11">
                     <div class="content">
                         <div class="header">
-                            ${escapeHtml(group.Name || 'Unnamed group')}
-                            <span class="box-badge ${typeInfo.color === 'green' ? 'box-badge-success' : 'box-badge-primary'}">${typeInfo.label}</span>
+                            ${escapeHtml(group.Name || 'Grupo sin nombre')}
+                            <span class="box-badge ${typeInfo.color === 'green' ? 'box-badge-success' : 'box-badge-primary'}">${etiquetaTipo(typeInfo.label)}</span>
                             ${userRoleBadge}
                         </div>
                         ${parentInfo}
                         <div class="description group-description" data-full-text="${escapeHtml(topic)}">
                             ${escapeHtml(truncatedTopic)}
-                            ${topic.length > 100 ? ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Read more</a>' : ''}
+                            ${topic.length > 100 ? ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Leer más</a>' : ''}
                         </div>
                         <div class="meta">
                             <span><i class="fas fa-users"></i>${participantCount} participants</span>
@@ -445,7 +451,7 @@ function createGroupListItem(group) {
                         </div>
                         <div class="meta">
                             <span><i class="fas fa-hashtag"></i><code>${group.JID}</code></span>
-                            <a href="#" onclick="copyGroupId(event, '${group.JID}')"><i class="fas fa-copy"></i>Copy ID</a>
+                            <a href="#" onclick="copyGroupId(event, '${group.JID}')"><i class="fas fa-copy"></i>Copiar ID</a>
                         </div>
                         <div class="meta">
                             ${featureBadges}
@@ -480,11 +486,11 @@ async function viewGroupDetails(groupJID) {
             populateGroupDetailsModal(response.data);
             $('#modalGroupDetails').modal('show');
         } else {
-            showError('Failed to load group details: ' + (response.error || response.message || 'Unknown error'));
+            showError('No se cargaron los detalles del grupo: ' + (response.error || response.message || 'Error desconocido'));
         }
     } catch (error) {
         console.error('Error loading group details:', error);
-        showError('Error loading group details: ' + error.message);
+        showError('Error al cargar los detalles del grupo: ' + error.message);
     }
 }
 
@@ -506,10 +512,10 @@ function populateGroupDetailsModal(groupData) {
         });
     }
     
-    $('#groupDetailsTitle').text(groupData.Name || 'Group Details');
-    $('#groupDetailsName').text(groupData.Name || 'Unnamed group');
-    $('#groupDetailsDescription').text(groupData.Topic || 'No description');
-    $('#groupDetailsParticipants').text((groupData.Participants || []).length + ' participants');
+    $('#groupDetailsTitle').text(groupData.Name || 'Detalles del grupo');
+    $('#groupDetailsName').text(groupData.Name || 'Grupo sin nombre');
+    $('#groupDetailsDescription').text(groupData.Topic || 'Sin descripción');
+    $('#groupDetailsParticipants').text((groupData.Participants || []).length + ' participantes');
     
     // Format creation date
     const createdDate = groupData.GroupCreated ? new Date(groupData.GroupCreated).toLocaleDateString('en-US', {
@@ -520,20 +526,20 @@ function populateGroupDetailsModal(groupData) {
     $('#groupDetailsCreated').text(createdDate);
 
     // Show group type and features
-    let featuresText = `${typeInfo.label}`;
-    if (groupData.IsAnnounce) featuresText += ', Admins only';
-    if (groupData.IsLocked) featuresText += ', Locked';
+    let featuresText = `${etiquetaTipo(typeInfo.label)}`;
+    if (groupData.IsAnnounce) featuresText += ', Solo administradores';
+    if (groupData.IsLocked) featuresText += ', Bloqueado';
     if (groupData.IsEphemeral && groupData.DisappearingTimer) {
         const timerText = formatDisappearingTimer(groupData.DisappearingTimer);
         featuresText += `, Disappearing messages (${timerText})`;
     }
-    if (groupData.IsJoinApprovalRequired) featuresText += ', Approval required';
+    if (groupData.IsJoinApprovalRequired) featuresText += ', Requiere aprobación';
     
     // Add group features info
     if ($('#groupDetailsFeatures').length === 0) {
         $('#groupDetailsCreated').parent().after(`
             <div class="item">
-                <div class="header">Type & Features</div>
+                <div class="header">Tipo y características</div>
                 <div id="groupDetailsFeatures">${featuresText}</div>
             </div>
         `);
@@ -549,7 +555,7 @@ function populateGroupDetailsModal(groupData) {
         if ($('#groupDetailsParent').length === 0) {
             $('#groupDetailsFeatures').parent().after(`
                 <div class="item">
-                    <div class="header">Parent Community</div>
+                    <div class="header">Comunidad principal</div>
                     <div id="groupDetailsParent">${escapeHtml(parentName)}</div>
                 </div>
             `);
@@ -594,7 +600,7 @@ function populateGroupDetailsModal(groupData) {
                 
                 // Remove button - available for admins
                 buttons.push(`
-                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
+                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Quitar del grupo">
                         <i class="fas fa-minus"></i> Remove
                     </button>
                 `);
@@ -603,16 +609,16 @@ function populateGroupDetailsModal(groupData) {
                 if (isSuperAdmin) {
                     // Super admins can promote/demote anyone
                     if (!participantIsAdmin && !participantIsSuperAdmin) {
-                        // Promote to admin
+                        // Hacer administrador
                         buttons.push(`
-                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Hacer administrador">
                                 <i class="fas fa-star"></i> Promote
                             </button>
                         `);
                     } else if (participantIsAdmin && !participantIsSuperAdmin) {
-                        // Demote from admin
+                        // Quitar como administrador
                         buttons.push(`
-                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
+                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Quitar como administrador">
                                 <i class="far fa-star"></i> Demote
                             </button>
                         `);
@@ -620,7 +626,7 @@ function populateGroupDetailsModal(groupData) {
                 } else if (isAdmin && !participantIsAdmin && !participantIsSuperAdmin) {
                     // Regular admins can only promote regular users to admin
                     buttons.push(`
-                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Hacer administrador">
                             <i class="fas fa-star"></i> Promote
                         </button>
                     `);
@@ -644,8 +650,8 @@ function populateGroupDetailsModal(groupData) {
                         </div>
                         <div class="participant-actions">
                             <div class="participant-labels">
-                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
-                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Superadministrador</span>' : 
+                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Administrador</span>' : ''}
                                 ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                             </div>
                             ${actionButtons}
@@ -656,7 +662,7 @@ function populateGroupDetailsModal(groupData) {
             participantsList.append(participantItem);
         });
     } else {
-        participantsList.append('<div class="item">No participants found</div>');
+        participantsList.append('<div class="item">No se encontraron participantes</div>');
     }
 }
 
@@ -680,8 +686,8 @@ function createParticipantItem(participant) {
                 </div>
                 <div class="participant-actions">
                     <div class="participant-labels">
-                        ${isSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
-                          isAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                        ${isSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Superadministrador</span>' : 
+                          isAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Administrador</span>' : ''}
                         ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                     </div>
                 </div>
@@ -693,9 +699,9 @@ function createParticipantItem(participant) {
 function copyGroupId(event, jid) {
     event.preventDefault();
     navigator.clipboard.writeText(jid).then(() => {
-        $.toast({ class: 'success', message: 'Group ID copied to clipboard!' });
+        $.toast({ class: 'success', message: 'ID del grupo copiado' });
     }).catch(() => {
-        $.toast({ class: 'error', message: 'Failed to copy group ID' });
+        $.toast({ class: 'error', message: 'No se pudo copiar el ID del grupo' });
     });
 }
 
@@ -744,11 +750,11 @@ function showCreateGroupModal() {
     
     // Reset dropdown
     dropdown.dropdown('clear');
-    dropdown.find('.menu').html('<div class="item disabled">No contacts loaded</div>');
+    dropdown.find('.menu').html('<div class="item disabled">No hay contactos cargados</div>');
     
     // Show initial status message
     statusDiv.show().removeClass('success error').addClass('info');
-    statusText.html('<i class="fas fa-circle-info"></i> Click "Load Contacts" to populate the participants list.');
+    statusText.html('<i class="fas fa-circle-info"></i> Pulsa "Cargar contactos" para llenar la lista de participantes.');
     
     $('#modalCreateGroup').modal('show');
 }
@@ -785,10 +791,10 @@ function populateParticipantsDropdown() {
         });
         
         // Update dropdown placeholder
-        $('#participantsDropdown .default.text').text('Select participants');
+        $('#participantsDropdown .default.text').text('Selecciona participantes');
     } else {
-        dropdown.append('<div class="item disabled">No contacts loaded. Click "Load Contacts" to populate the list.</div>');
-        $('#participantsDropdown .default.text').text('Load contacts first');
+        dropdown.append('<div class="item disabled">No hay contactos cargados. Pulsa "Cargar contactos" para llenar la lista.</div>');
+        $('#participantsDropdown .default.text').text('Carga primero los contactos');
     }
     
     $('#participantsDropdown').dropdown('refresh');
@@ -803,7 +809,7 @@ async function createGroup() {
         const participants = $('#participantsDropdown').dropdown('get value');
         
         if (!groupName || !participants || participants.length === 0) {
-            showError('Please fill in all required fields');
+            showError('Completa todos los campos obligatorios');
             return;
         }
         
@@ -826,17 +832,17 @@ async function createGroup() {
         const response = await createGroupAPI(createData);
         
         if (response.success || response.code === 200) {
-            showSuccess('Group created successfully!');
+            showSuccess('Grupo creado');
             $('#modalCreateGroup').modal('hide');
             form[0].reset();
             $('#participantsDropdown').dropdown('clear');
             loadGroups(); // Refresh groups list
         } else {
-            showError('Failed to create group: ' + (response.error || 'Unknown error'));
+            showError('No se creó el grupo: ' + (response.error || 'Error desconocido'));
         }
     } catch (error) {
-        console.error('Error creating group:', error);
-        showError('Error creating group');
+        console.error('Error al crear el grupo:', error);
+        showError('Error al crear el grupo');
     }
 }
 
@@ -848,7 +854,7 @@ async function previewGroup() {
     try {
         const inviteCode = $('input[name="inviteCode"]').val().trim();
         if (!inviteCode) {
-            showError('Please enter an invite code or link');
+            showError('Ingresa un código o enlace de invitación');
             return;
         }
         
@@ -860,11 +866,11 @@ async function previewGroup() {
         if (response.success && response.data) {
             displayGroupPreview(response.data);
         } else {
-            showError('Failed to get group preview: ' + (response.error || 'Invalid invite code'));
+            showError('No se obtuvo la vista previa del grupo: ' + (response.error || 'Código de invitación inválido'));
         }
     } catch (error) {
-        console.error('Error previewing group:', error);
-        showError('Error previewing group');
+        console.error('Error al ver la vista previa del grupo:', error);
+        showError('Error al ver la vista previa del grupo');
     }
 }
 
@@ -881,7 +887,7 @@ function displayGroupPreview(groupData) {
             </div>
             <div class="wsp-col-12">
                 <h4>${escapeHtml(groupData.Name || 'Unnamed Group')}</h4>
-                <p>${escapeHtml(groupData.Topic || 'No description')}</p>
+                <p>${escapeHtml(groupData.Topic || 'Sin descripción')}</p>
                 <p><strong>Participants:</strong> ${groupData.Size || 0}</p>
             </div>
         </div>
@@ -894,7 +900,7 @@ async function joinGroup() {
     try {
         const inviteCode = $('input[name="inviteCode"]').val().trim();
         if (!inviteCode) {
-            showError('Please enter an invite code or link');
+            showError('Ingresa un código o enlace de invitación');
             return;
         }
         
@@ -903,17 +909,17 @@ async function joinGroup() {
         const response = await joinGroupAPI(code);
         
         if (response.success) {
-            showSuccess('Successfully joined the group!');
+            showSuccess('Te uniste al grupo');
             $('#modalJoinGroup').modal('hide');
             $('#joinGroupForm')[0].reset();
             $('#groupPreviewContainer').addClass('hidden');
             loadGroups(); // Refresh groups list
         } else {
-            showError('Failed to join group: ' + (response.error || 'Unknown error'));
+            showError('No te uniste al grupo: ' + (response.error || 'Error desconocido'));
         }
     } catch (error) {
-        console.error('Error joining group:', error);
-        showError('Error joining group');
+        console.error('Error al unirte al grupo:', error);
+        showError('Error al unirte al grupo');
     }
 }
 
@@ -1111,11 +1117,11 @@ function toggleDescription(element) {
     const descriptionDiv = element.parentElement;
     const fullText = descriptionDiv.getAttribute('data-full-text');
     
-    if (element.textContent.trim() === 'Read more') {
-        descriptionDiv.innerHTML = escapeHtml(fullText) + ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Read less</a>';
+    if (element.textContent.trim() === 'Leer más') {
+        descriptionDiv.innerHTML = escapeHtml(fullText) + ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Leer menos</a>';
     } else {
         const truncated = truncateText(fullText, 100);
-        descriptionDiv.innerHTML = escapeHtml(truncated) + ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Read more</a>';
+        descriptionDiv.innerHTML = escapeHtml(truncated) + ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Leer más</a>';
     }
 }
 
@@ -1123,7 +1129,7 @@ function openGroupChat(groupJID) {
     // This would open the chat interface for the group
     // Implementation depends on your chat interface
     //console.log('Opening chat for group:', groupJID);
-    showSuccess('Chat functionality would be opened here');
+    showSuccess('Aquí se abriría el chat');
 }
 
 function manageGroup(groupJID) {
@@ -1212,7 +1218,7 @@ function showGroupInviteLinkModal() {
         if (response.success && response.data && response.data.InviteLink) {
             $('#currentInviteLink').val(response.data.InviteLink);
         } else {
-            $('#currentInviteLink').val('Failed to load invite link');
+            $('#currentInviteLink').val('No se cargó el enlace de invitación');
         }
     }).catch(error => {
         console.error('Error loading invite link:', error);
@@ -1259,7 +1265,7 @@ function populateCurrentParticipantsList() {
                 
                 // Remove button - available for admins
                 buttons.push(`
-                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
+                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Quitar del grupo">
                         <i class="fas fa-minus"></i> Remove
                     </button>
                 `);
@@ -1268,16 +1274,16 @@ function populateCurrentParticipantsList() {
                 if (currentUserIsSuperAdmin) {
                     // Super admins can promote/demote anyone
                     if (!participantIsAdmin && !participantIsSuperAdmin) {
-                        // Promote to admin
+                        // Hacer administrador
                         buttons.push(`
-                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Hacer administrador">
                                 <i class="fas fa-star"></i> Promote
                             </button>
                         `);
                     } else if (participantIsAdmin && !participantIsSuperAdmin) {
-                        // Demote from admin
+                        // Quitar como administrador
                         buttons.push(`
-                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
+                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Quitar como administrador">
                                 <i class="far fa-star"></i> Demote
                             </button>
                         `);
@@ -1285,7 +1291,7 @@ function populateCurrentParticipantsList() {
                 } else if (currentUserIsAdmin && !participantIsAdmin && !participantIsSuperAdmin) {
                     // Regular admins can only promote regular users to admin
                     buttons.push(`
-                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Hacer administrador">
                             <i class="fas fa-star"></i> Promote
                         </button>
                     `);
@@ -1309,8 +1315,8 @@ function populateCurrentParticipantsList() {
                         </div>
                         <div class="participant-actions">
                             <div class="participant-labels">
-                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
-                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Superadministrador</span>' : 
+                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Administrador</span>' : ''}
                                 ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                             </div>
                             ${actionButtons}
@@ -1343,10 +1349,10 @@ function populateAddParticipantsDropdown() {
             }
         });
         
-        $('#addParticipantsDropdown .default.text').text('Select contacts to add');
+        $('#addParticipantsDropdown .default.text').text('Selecciona contactos para agregar');
     } else {
-        dropdown.append('<div class="item disabled">No contacts loaded. Click "Load Contacts" to populate the list.</div>');
-        $('#addParticipantsDropdown .default.text').text('Load contacts first');
+        dropdown.append('<div class="item disabled">No hay contactos cargados. Pulsa "Cargar contactos" para llenar la lista.</div>');
+        $('#addParticipantsDropdown .default.text').text('Carga primero los contactos');
     }
     
     $('#addParticipantsDropdown').dropdown('refresh');
@@ -1360,7 +1366,7 @@ async function saveGroupInfo() {
     const groupDescription = $('#editGroupDescriptionInput').val().trim();
     
     if (!groupName) {
-        showError('Group name is required');
+        showError('El nombre del grupo es obligatorio');
         return;
     }
     
@@ -1368,18 +1374,18 @@ async function saveGroupInfo() {
         // Update group name
         const nameResponse = await updateGroupName(currentGroupId, groupName);
         if (!nameResponse.success) {
-            throw new Error('Failed to update group name: ' + (nameResponse.error || 'Unknown error'));
+            throw new Error('No se actualizó el nombre del grupo: ' + (nameResponse.error || 'Error desconocido'));
         }
         
         // Update group description if provided
         if (groupDescription) {
             const topicResponse = await updateGroupTopic(currentGroupId, groupDescription);
             if (!topicResponse.success) {
-                throw new Error('Failed to update group description: ' + (topicResponse.error || 'Unknown error'));
+                throw new Error('No se actualizó la descripción del grupo: ' + (topicResponse.error || 'Error desconocido'));
             }
         }
         
-        showSuccess('Group information updated successfully!');
+        showSuccess('Información del grupo actualizada');
         $('#modalEditGroupInfo').modal('hide');
         
         // Refresh group details
@@ -1389,7 +1395,7 @@ async function saveGroupInfo() {
         
     } catch (error) {
         console.error('Error updating group info:', error);
-        showError('Error updating group information: ' + error.message);
+        showError('Error al actualizar la información del grupo: ' + error.message);
     }
 }
 
@@ -1404,22 +1410,22 @@ async function saveGroupSettings() {
         // Update announce setting
         const announceResponse = await updateGroupAnnounce(currentGroupId, announceOnly);
         if (!announceResponse.success) {
-            throw new Error('Failed to update announce setting');
+            throw new Error('No se actualizó el ajuste de solo administradores');
         }
         
         // Update locked setting
         const lockedResponse = await updateGroupLocked(currentGroupId, locked);
         if (!lockedResponse.success) {
-            throw new Error('Failed to update locked setting');
+            throw new Error('No se actualizó el ajuste de edición');
         }
         
         // Update disappearing timer
         const ephemeralResponse = await updateGroupEphemeral(currentGroupId, disappearingTimer);
         if (!ephemeralResponse.success) {
-            throw new Error('Failed to update disappearing timer');
+            throw new Error('No se actualizó el temporizador de mensajes');
         }
         
-        showSuccess('Group settings updated successfully!');
+        showSuccess('Ajustes del grupo actualizados');
         $('#modalGroupSettings').modal('hide');
         
         // Refresh group details
@@ -1429,7 +1435,7 @@ async function saveGroupSettings() {
         
     } catch (error) {
         console.error('Error updating group settings:', error);
-        showError('Error updating group settings: ' + error.message);
+        showError('Error al actualizar los ajustes del grupo: ' + error.message);
     }
 }
 
@@ -1438,7 +1444,7 @@ async function addParticipants() {
     
     const selectedParticipants = $('#addParticipantsDropdown').dropdown('get value');
     if (!selectedParticipants || selectedParticipants.length === 0) {
-        showError('Please select participants to add');
+        showError('Selecciona participantes para agregar');
         return;
     }
     
@@ -1450,7 +1456,7 @@ async function addParticipants() {
         const response = await updateGroupParticipants(currentGroupId, 'add', participantNumbers);
         
         if (response.success) {
-            showSuccess('Participants added successfully!');
+            showSuccess('Participantes agregados');
             $('#addParticipantsDropdown').dropdown('clear');
             
             // Refresh participants list
@@ -1462,19 +1468,19 @@ async function addParticipants() {
                 viewGroupDetails(currentGroupId);
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error adding participants:', error);
-        showError('Error adding participants: ' + error.message);
+        showError('Error al agregar participantes: ' + error.message);
     }
 }
 
 async function removeParticipant(participantJID) {
     if (!currentGroupId || !participantJID) return;
     
-    if (!confirm('Are you sure you want to remove this participant from the group?')) {
+    if (!confirm('¿Seguro que quieres quitar a este participante del grupo?')) {
         return;
     }
     
@@ -1485,7 +1491,7 @@ async function removeParticipant(participantJID) {
         const response = await updateGroupParticipants(currentGroupId, 'remove', [phoneNumber]);
         
         if (response.success) {
-            showSuccess('Participant removed successfully!');
+            showSuccess('Participante quitado');
             
             // Refresh participants list
             populateCurrentParticipantsList();
@@ -1496,19 +1502,19 @@ async function removeParticipant(participantJID) {
                 viewGroupDetails(currentGroupId);
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error removing participant:', error);
-        showError('Error removing participant: ' + error.message);
+        showError('Error al quitar al participante: ' + error.message);
     }
 }
 
 async function promoteParticipant(participantJID) {
     if (!currentGroupId || !participantJID) return;
     
-    if (!confirm('Are you sure you want to promote this participant to admin?')) {
+    if (!confirm('¿Seguro que quieres hacer administrador a este participante?')) {
         return;
     }
     
@@ -1519,7 +1525,7 @@ async function promoteParticipant(participantJID) {
         const response = await updateGroupParticipants(currentGroupId, 'promote', [phoneNumber]);
         
         if (response.success) {
-            showSuccess('Participant promoted to admin successfully!');
+            showSuccess('Participante ahora es administrador');
             
             // Refresh participants list
             populateCurrentParticipantsList();
@@ -1529,19 +1535,19 @@ async function promoteParticipant(participantJID) {
                 viewGroupDetails(currentGroupId);
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error promoting participant:', error);
-        showError('Error promoting participant: ' + error.message);
+        showError('Error al hacer administrador al participante: ' + error.message);
     }
 }
 
 async function demoteParticipant(participantJID) {
     if (!currentGroupId || !participantJID) return;
     
-    if (!confirm('Are you sure you want to demote this admin to regular participant?')) {
+    if (!confirm('¿Seguro que quieres quitar a este administrador y dejarlo como participante?')) {
         return;
     }
     
@@ -1552,7 +1558,7 @@ async function demoteParticipant(participantJID) {
         const response = await updateGroupParticipants(currentGroupId, 'demote', [phoneNumber]);
         
         if (response.success) {
-            showSuccess('Admin demoted to participant successfully!');
+            showSuccess('El administrador pasó a ser participante');
             
             // Refresh participants list
             populateCurrentParticipantsList();
@@ -1562,35 +1568,35 @@ async function demoteParticipant(participantJID) {
                 viewGroupDetails(currentGroupId);
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error demoting participant:', error);
-        showError('Error demoting participant: ' + error.message);
+        showError('Error al quitar como administrador: ' + error.message);
     }
 }
 
 async function copyInviteLink() {
     const inviteLink = $('#currentInviteLink').val();
-    if (!inviteLink || inviteLink === 'Loading...' || inviteLink.includes('Failed') || inviteLink.includes('Error')) {
-        showError('No valid invite link to copy');
+    if (!inviteLink || inviteLink === 'Loading...' || inviteLink.includes('No se cargó') || inviteLink.includes('Error')) {
+        showError('No hay un enlace de invitación válido para copiar');
         return;
     }
     
     try {
         await navigator.clipboard.writeText(inviteLink);
-        showSuccess('Invite link copied to clipboard!');
+        showSuccess('Enlace de invitación copiado');
     } catch (error) {
         console.error('Error copying to clipboard:', error);
-        showError('Failed to copy invite link');
+        showError('No se pudo copiar el enlace de invitación');
     }
 }
 
 async function resetInviteLink() {
     if (!currentGroupId) return;
     
-    if (!confirm('Are you sure you want to reset the invite link? This will invalidate the current link.')) {
+    if (!confirm('¿Seguro que quieres restablecer el enlace? El enlace actual dejará de funcionar.')) {
         return;
     }
     
@@ -1601,22 +1607,22 @@ async function resetInviteLink() {
         
         if (response.success && response.data && response.data.InviteLink) {
             $('#currentInviteLink').val(response.data.InviteLink);
-            showSuccess('Invite link reset successfully!');
+            showSuccess('Enlace de invitación restablecido');
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error resetting invite link:', error);
         $('#currentInviteLink').val('Error resetting invite link');
-        showError('Error resetting invite link: ' + error.message);
+        showError('Error al restablecer el enlace: ' + error.message);
     }
 }
 
 async function removeGroupPhoto() {
     if (!currentGroupId) return;
     
-    if (!confirm('Are you sure you want to remove the group photo?')) {
+    if (!confirm('¿Seguro que quieres quitar la foto del grupo?')) {
         return;
     }
     
@@ -1624,39 +1630,39 @@ async function removeGroupPhoto() {
         const response = await removeGroupPhotoAPI(currentGroupId);
         
         if (response.success) {
-            showSuccess('Group photo removed successfully!');
+            showSuccess('Foto del grupo quitada');
             
             // Refresh group details
             setTimeout(() => {
                 viewGroupDetails(currentGroupId);
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error removing group photo:', error);
-        showError('Error removing group photo: ' + error.message);
+        showError('Error al quitar la foto del grupo: ' + error.message);
     }
 }
 
 async function uploadGroupPhoto(file) {
     if (!currentGroupId || !file) {
-        showError('No group selected or file provided');
+        showError('No se eligió un grupo o un archivo');
         return;
     }
     
     // Validate file type
     const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!file.type.startsWith('image/') || !supportedTypes.includes(file.type.toLowerCase())) {
-        showError('Please select a supported image file (JPEG, PNG, GIF, WebP)');
+        showError('Elige una imagen compatible (JPEG, PNG, GIF, WebP)');
         return;
     }
     
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-        showError('Image file is too large. Please select an image smaller than 10MB.');
+        showError('La imagen es demasiado grande. Elige una de menos de 10 MB.');
         return;
     }
     
@@ -1667,7 +1673,7 @@ async function uploadGroupPhoto(file) {
         uploadButton = document.querySelector('#changeGroupPhotoBtn');
         if (uploadButton) {
             uploadButton.disabled = true;
-            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Procesando…';
         }
         
         console.log('Starting group photo upload process...');
@@ -1683,7 +1689,7 @@ async function uploadGroupPhoto(file) {
         const processedImage = await fileToBase64(file);
         
         if (!processedImage) {
-            throw new Error('Failed to process image file');
+            throw new Error('No se pudo procesar la imagen');
         }
         
         console.log('Image processed successfully, uploading to server...');
@@ -1697,13 +1703,13 @@ async function uploadGroupPhoto(file) {
         
         // Update button text
         if (uploadButton) {
-            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
+            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Subiendo…';
         }
         
         const response = await updateGroupPhoto(currentGroupId, processedImage.base64);
         
         if (response.success) {
-            showSuccess('Group photo updated successfully!');
+            showSuccess('Foto del grupo actualizada');
             console.log('Group photo upload completed successfully');
             
             // Refresh group details after a short delay
@@ -1711,32 +1717,32 @@ async function uploadGroupPhoto(file) {
                 viewGroupDetails(currentGroupId);
             }, 1500);
         } else {
-            const errorMsg = response.error || 'Failed to update group photo';
+            const errorMsg = response.error || 'No se actualizó la foto del grupo';
             console.error('Server error:', errorMsg);
             
             // If the error suggests a format issue, provide helpful feedback
             if (errorMsg.includes('decode') || errorMsg.includes('base64')) {
-                throw new Error('Image encoding error. Please try a different image file.');
+                throw new Error('Error de codificación de la imagen. Prueba con otra imagen.');
             } else if (errorMsg.includes('format') || errorMsg.includes('data:image')) {
-                throw new Error('Image format error. Please ensure the image is in a supported format (JPEG, PNG, GIF, WebP).');
+                throw new Error('Error de formato de imagen. Asegúrate de que sea JPEG, PNG, GIF o WebP.');
             } else if (errorMsg.includes('Internal server error')) {
-                throw new Error('Server error occurred. Please try again or contact support if the problem persists.');
+                throw new Error('Ocurrió un error en el servidor. Inténtalo de nuevo o contacta a soporte si persiste.');
             } else {
                 throw new Error(errorMsg);
             }
         }
         
     } catch (error) {
-        console.error('Error uploading group photo:', error);
+        console.error('Error al subir la foto del grupo:', error);
         
         // Provide more specific error messages
-        let errorMessage = 'Error uploading group photo';
-        if (error.message.includes('Network error')) {
-            errorMessage = 'Network error. Please check your connection and try again.';
-        } else if (error.message.includes('Invalid image format')) {
-            errorMessage = 'Invalid image format. Please try a different image.';
-        } else if (error.message.includes('Failed to process')) {
-            errorMessage = 'Failed to process image. Please try a different image file.';
+        let errorMessage = 'Error al subir la foto del grupo';
+        if (error.message.includes('Error de red')) {
+            errorMessage = 'Error de red. Revisa tu conexión e inténtalo de nuevo.';
+        } else if (error.message.includes('Formato de imagen inválido')) {
+            errorMessage = 'Formato de imagen inválido. Prueba con otra imagen.';
+        } else if (error.message.includes('No se pudo procesar')) {
+            errorMessage = 'No se pudo procesar la imagen. Prueba con otro archivo.';
         } else if (error.message) {
             errorMessage += ': ' + error.message;
         }
@@ -1747,7 +1753,7 @@ async function uploadGroupPhoto(file) {
         // Reset button state
         if (uploadButton) {
             uploadButton.disabled = false;
-            uploadButton.innerHTML = '<i class="fas fa-upload"></i> Change Photo';
+            uploadButton.innerHTML = '<i class="fas fa-upload"></i> Cambiar foto';
         }
     }
 }
@@ -1755,7 +1761,7 @@ async function uploadGroupPhoto(file) {
 function confirmLeaveGroup() {
     if (!currentGroupId) return;
     
-    if (!confirm('Are you sure you want to leave this group? This action cannot be undone.')) {
+    if (!confirm('¿Seguro que quieres salir de este grupo? Esta acción no se puede deshacer.')) {
         return;
     }
     
@@ -1769,7 +1775,7 @@ async function leaveGroup() {
         const response = await leaveGroupAPI(currentGroupId);
         
         if (response.success) {
-            showSuccess('Left group successfully!');
+            showSuccess('Saliste del grupo');
             $('#modalGroupDetails').modal('hide');
             
             // Refresh groups list
@@ -1777,12 +1783,12 @@ async function leaveGroup() {
                 loadGroups();
             }, 1000);
         } else {
-            throw new Error(response.error || 'Unknown error');
+            throw new Error(response.error || 'Error desconocido');
         }
         
     } catch (error) {
         console.error('Error leaving group:', error);
-        showError('Error leaving group: ' + error.message);
+        showError('Error al salir del grupo: ' + error.message);
     }
 }
 
@@ -1914,7 +1920,7 @@ function fileToBase64(file) {
         
         img.onerror = function(error) {
             console.error('Failed to load image:', error);
-            reject(new Error('Failed to load image file. Please ensure it is a valid image.'));
+            reject(new Error('No se pudo cargar la imagen. Asegúrate de que sea válida.'));
         };
         
         // Create object URL from file and load into image
@@ -1945,7 +1951,7 @@ function fileToBase64(file) {
             
         } catch (error) {
             console.error('Error creating object URL:', error);
-            reject(new Error('Failed to process image file'));
+            reject(new Error('No se pudo procesar la imagen'));
         }
     });
 }
@@ -2129,7 +2135,7 @@ async function updateGroupPhoto(groupJID, photoBase64) {
 
     // Validate the image data format before sending
     if (!imageData.startsWith('data:image/')) {
-        throw new Error('Invalid image format. Expected data URL format.');
+        throw new Error('Formato de imagen inválido. Se esperaba una URL de datos.');
     }
     
     // Ensure the payload matches exactly what the backend expects
@@ -2163,16 +2169,16 @@ async function updateGroupPhoto(groupJID, photoBase64) {
             };
         } else {
             // Handle error responses - provide detailed error information
-            let errorMessage = 'Unknown server error';
+            let errorMessage = 'Error desconocido del servidor';
             
             if (data.error) {
                 errorMessage = data.error;
             } else if (data.message) {
                 errorMessage = data.message;
             } else if (response.status === 500) {
-                errorMessage = 'Internal server error. Please check server logs for details.';
+                errorMessage = 'Error interno del servidor. Revisa los registros del servidor.';
             } else if (response.status === 400) {
-                errorMessage = 'Bad request. Please check the image format and try again.';
+                errorMessage = 'Solicitud inválida. Revisa el formato de la imagen e inténtalo de nuevo.';
             } else {
                 errorMessage = `Server error (${response.status}): ${response.statusText}`;
             }
@@ -2196,7 +2202,7 @@ async function updateGroupPhoto(groupJID, photoBase64) {
         return {
             success: false,
             data: null,
-            error: `Network error: ${error.message}`
+            error: `Error de red: ${error.message}`
         };
     }
 }
