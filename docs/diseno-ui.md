@@ -165,3 +165,7 @@ sus permisos con `GET /session/client-access` y oculta lo no permitido. Detalle 
 ### Login del panel (selector de rol)
 
 El login del dashboard (`#loginCard` en `dashboard/index.html`) ya no tiene dos botones ambiguos: un selector de dos tarjetas (**Usuario** / **Administrador**, `#loginModeUser`/`#loginModeAdmin`, `role=radio`) y un solo botón de entrada cuyo texto cambia ("Entrar como usuario/administrador"). La tarjeta lleva `data-modo="usuario|admin"`: borde y botón verdes o rojos según el rol, y etiqueta, ayuda y placeholder cambian. La lógica es `setLoginMode()` en `js/app.js` (fija `isAdminLogin`, que decide si se valida el token de usuario o el de administrador) y los estilos `.wsp-modos`/`.wsp-modo` en `wsp-dashboard.css`. Al cambiar de modo se vacía el campo, porque el token de un rol no sirve para el otro. Es responsivo: en móvil se ocultan los subtítulos de las tarjetas. El campo es `type="password"` para no mostrar el token en pantalla.
+
+### Caché del navegador (importante al desplegar)
+
+Los scripts y el CSS del panel se cargan con `?v=...` (por ejemplo `js/app.js?v=login-modos-1`). **Si cambias uno de esos archivos, cambia también su `?v=` en `dashboard/index.html`**; si no, el navegador mezcla un HTML nuevo con un JS viejo y el panel deja de arrancar (sin login, sin cerrar sesión). Síntoma típico: la consola muestra `Cannot read properties of null` en `app.js`. Solución inmediata para quien ya lo tiene roto: Ctrl+F5.
