@@ -51,7 +51,9 @@
 .wsp-fin { margin-inline-start: auto; text-align: end; }
 
 @media (max-width: 768px) {
-    .wsp-grid > [class*="wsp-col"] { flex: 1 0 100%; }
+    /* flex-shrink 1 y min-width 0: con "1 0 100%" una columna con un input ancho se salia de su modal */
+    .wsp-grid > [class*="wsp-col"] { flex: 1 1 100%; min-width: 0; }
+    .box-btn-group { flex-wrap: wrap; }
     .wsp-fin { margin-inline-start: 0; text-align: start; }
 }
 
