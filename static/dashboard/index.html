@@ -1,46 +1,74 @@
 <!doctype html>
-<html lang="en">
+<!--
+  Panel de WspBox (ruta "/dashboard"): instancias, sesión de WhatsApp, webhook,
+  proxy, S3, HMAC, historial y gestión de grupos.
+  Diseño: BoxUI (contexto "app") + tema en assets/css/wspbox.css + estilos del
+  panel en assets/css/wsp-dashboard.css. Sin CDN: todo sale de /assets.
+  Comportamiento: js/app.js, js/groups.js y js/proxypool.js (lógica con jQuery).
+  Los componentes que antes daba Fomantic UI (modal, dropdown, checkbox, form,
+  toast) los da assets/js/wsp-compat.js sobre BoxUI.
+  Los ids y clases de gancho (hidden, widget, maingrid, admingrid, logingrid,
+  adminlogin, no-hover...) los usa el JavaScript: no renombrar sin revisarlo.
+  Documentación: docs/diseno-ui.md
+-->
+<html lang="en" data-theme="light" data-ui-mode="normal" data-ui-context="app">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WuzAPI</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.css">
-  <link rel="stylesheet" href="css/app.css">
+  <title>WspBox</title>
+  <link rel="icon" href="/images/favicon.png">
+
+  <!-- Antes de cualquier <link>: evita el parpadeo en claro -->
+  <script>
+  (function () {
+    var d = document.documentElement;
+    try {
+      d.setAttribute('data-theme', localStorage.getItem('box-theme') || 'light');
+      d.setAttribute('data-ui-mode', localStorage.getItem('box-ui-mode') || 'normal');
+    } catch (e) { /* almacenamiento bloqueado: se queda el valor por defecto */ }
+  })();
+  </script>
+
+  <link rel="preload" href="/assets/lib/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/vendor.css">
+  <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
+  <link rel="stylesheet" href="/assets/css/wspbox.css">
+  <link rel="stylesheet" href="/assets/css/wsp-dashboard.css">
 </head>
 <body>
 
   <!-- Login -->
-  <div class="ui middle aligned center aligned grid logingrid hidden">
-    <div class="column">
-      <div class="ui centered card login" style="width:600px;">
+  <div class="wsp-grid logingrid hidden">
+    <div class="wsp-col">
+      <div class="wsp-instancia centered login" style="width:600px;">
         <div class="content">
           <div class="center aligned mb-4">
-            <i class="whatsapp icon bi-whatsapp"></i> 
-            <h2 class="ui header">WuzAPI Manager</h2>
+            <i class="fab fa-whatsapp bi-whatsapp"></i> 
+            <h2>WspBox Manager</h2>
             <p class="text-muted">Log in to access the dashboard</p>
           </div>
-          <form id="loginForm" class="ui form mb-4">
-            <div class="field mb-4" style="text-align:left;">
+          <form id="loginForm" class="mb-4">
+            <div class="box-field mb-4" style="text-align:left;">
               <label for="loginToken">Access Token</label>
               <input type="text" id="loginToken" placeholder="Type your access token">
-              <div class="ui description">
+              <div class="box-muted">
                   Token used to authenticate your requests to the API.
               </div>
             </div>
-            <div class="ui fluid buttons">
-              <button type="submit" class="ui primary button" id="regularLoginBtn">
-                <i class="sign-in icon"></i>Login
+            <div class="box-btn-group wsp-ancho">
+              <button type="submit" class="box-btn" id="regularLoginBtn">
+                <i class="fas fa-right-to-bracket"></i>Login
               </button>
-              <div class="or"></div>
-              <button type="button" class="ui button" id="loginAsAdminBtn">
-                <i class="shield alternate icon"></i>Admin Login
+              
+              <button type="button" class="box-btn" id="loginAsAdminBtn">
+                <i class="fas fa-shield-halved"></i>Admin Login
               </button>
             </div>
           </form>
-          <div class="ui info message" style="text-align:left;">
-            <div class="header mb-4">
-              <i class="user icon"></i> User Login
-            </div>
+          <div class="box-alert" style="text-align:left;">
+            <strong class="wsp-titulo-alerta">
+              <i class="fas fa-user"></i> User Login
+            </strong>
             <p>Please enter user credentials:</p>
             <ul>
               <li>Use your user token in the field above</li>
@@ -52,46 +80,44 @@
   </div>
 
   <!-- Header Menu -->
-  <div class="ui fixed menu menu-header hidden maingrid admingrid">
-    <div class="ui container fluid secondary pointing">
+  <div class="wsp-barra menu-header maingrid admingrid hidden">
+    <div class="wsp-contenedor">
       <a href="#" class="header item">
-        <span class='title-container'>
-          <i class="whatsapp icon"></i> WuzAPI Manager
+        <span class="title-container">
+          <i class="fab fa-whatsapp"></i> WspBox Manager
         </span>
       </a>
       <div class="right menu">
         <div class="item" id="user-role-indicator">
-          <i class="user icon"></i>
+          <i class="fas fa-user"></i>
           <span id="user-role-text">...</span>
         </div>
         <div class="item">
-          <a href='#' id='menulogout'>Logout</a></div>
+          <a href="#" id="menulogout">Logout</a></div>
         </div>
       </div>
     </div>
-  </div>
+  </body></html>
   
-  <div style='height:70px;'>&nbsp;</div> <!-- top margin/spacer for header -->
+  <div style="height:70px;">&nbsp;</div> <!-- top margin/spacer for header -->
 
   <!-- Instances Table -->
-  <div class="ui container fluid hidden admingrid p1">
-    <div class="ui stackable grid">
-      <div class="row">
-        <div class="left floated left aligned ten wide column">
-          <h1 class="ui header">Instances Management</h1>
+  <div class="wsp-contenedor admingrid p1 hidden">
+    <div class="wsp-grid wsp-apilable">
+      <div class="wsp-grid">
+        <div class="wsp-col-10">
+          <h1>Instances Management</h1>
         </div>
-        <div class="right floated right aligned six wide column">
-          <button class="ui primary button" id='addInstanceButton'>
-            <i class="plus icon"></i> Add Instance
+        <div class="wsp-col-6 wsp-fin">
+          <button class="box-btn" id="addInstanceButton" type="button">
+            <i class="fas fa-plus"></i> Add Instance
           </button>
         </div>
       </div>
     </div>
-    <div class="ui mb-4">
-      <div class="ui active inverted dimmer" id="loading">
-        <div class="ui text loader">Loading instances...</div>
-      </div>
-      <table class="ui celled table" id="instances-table">
+    <div class="mb-4">
+      <div class="wsp-cargando active" id="loading"><span class="box-spinner"></span> <span>Loading instances...</span></div>
+      <table class="box-fields-table" id="instances-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -107,24 +133,24 @@
     </div>
 
     <!-- Proxy Pool -->
-    <div class="ui stackable grid" id="proxyPoolSection">
-      <div class="row">
-        <div class="left floated left aligned ten wide column">
-          <h2 class="ui header">
+    <div class="wsp-grid wsp-apilable" id="proxyPoolSection">
+      <div class="wsp-grid">
+        <div class="wsp-col-10">
+          <h2>
             Proxy Pool
-            <div class="sub header">Instances that connect without their own proxy are assigned the least-loaded proxy below and keep it on every reconnect.</div>
+            <small class="wsp-sub">Instances that connect without their own proxy are assigned the least-loaded proxy below and keep it on every reconnect.</small>
           </h2>
         </div>
-        <div class="right floated right aligned six wide column">
-          <button class="ui primary button" id="addProxyPoolButton">
-            <i class="plus icon"></i> Add Proxy
+        <div class="wsp-col-6 wsp-fin">
+          <button class="box-btn" id="addProxyPoolButton" type="button">
+            <i class="fas fa-plus"></i> Add Proxy
           </button>
         </div>
       </div>
     </div>
-    <div class="ui mb-4">
-      <div class="ui negative message hidden" id="proxyPoolError"></div>
-      <table class="ui celled table" id="proxy-pool-table">
+    <div class="mb-4">
+      <div class="box-alert box-alert-danger hidden" id="proxyPoolError"></div>
+      <table class="box-fields-table" id="proxy-pool-table">
         <thead>
           <tr>
             <th>Label</th>
@@ -140,133 +166,120 @@
   </div> 
 
   <!-- Instance Cards and Go Back to list button -->
-  <div class="ui container fluid p1">
-    <div class="ui stackable cards" id="instances-cards"></div>
-    <div class="ui right aligned basic segment adminlogin">
-      <button class="ui secondary button" onclick="goBackToList()">
-        <i class="left arrow icon"></i> Go Back
+  <div class="wsp-contenedor p1">
+    <div class="grid wsp-grupo" id="instances-cards"></div>
+    <div class="wsp-seccion adminlogin">
+      <button class="box-btn secondary" onclick="goBackToList()" type="button">
+        <i class="fas fa-arrow-left"></i> Go Back
       </button>
     </div>
   </div>
 
   <!-- Dashboard -->
-  <div class="ui container fluid p1 hidden maingrid" id="mainDashboard">
+  <div class="wsp-contenedor p1 maingrid hidden" id="mainDashboard">
 
-    <div class="ui horizontal divider widget"> Configuration </div>
-    <div class="ui three column stackable grid cards">
-      <div class="purple card hidden widget" style="cursor: pointer;" id="s3Config">
-        <div class="content"><a class="ui purple right ribbon label">Config</a>
-          <div class="header">S3 Storage</div>
-          <div class="description">Configure S3-compatible storage for media files.</div>
-        </div>
-      </div>
-      <div class="purple card hidden widget" style="cursor: pointer;" id="proxyConfig">
-        <div class="content"><a class="ui purple right ribbon label">Config</a>
-          <div class="header">Proxy Settings</div>
-          <div class="description">Configure proxy for WhatsApp and webhook delivery.</div>
-        </div>
-      </div>
-      <div class="purple card hidden widget" style="cursor: pointer;" id="webhookConfig">
-        <div class="content"><a class="ui purple right ribbon label">Config</a>
-          <div class="header">Webhook Events</div>
-          <div class="description">Configure webhook URL and event subscriptions.</div>
-        </div>
-      </div>
-      <div class="purple card hidden widget" style="cursor: pointer;" id="historyConfig">
-        <div class="content"><a class="ui purple right ribbon label">Config</a>
-          <div class="header">Message History</div>
-          <div class="description">Configure message history.</div>
-        </div>
-      </div>
-      <div class="purple card hidden widget" style="cursor: pointer;" id="hmacConfig">
-        <div class="content"><a class="ui purple right ribbon label">Config</a>
-          <div class="header">HMAC Key</div>
-          <div class="description">Configure HMAC key for webhook security.</div>
-        </div>
-      </div>
+    <h2 class="box-divider box-divider-start widget"> Configuration </h2>
+    <div class="grid wsp-grupo">
+      <article class="box-stretch-host wsp-widget widget hidden" id="s3Config">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">S3 Storage</button></h3>
+        <p class="box-muted">Configure S3-compatible storage for media files.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="proxyConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Proxy Settings</button></h3>
+        <p class="box-muted">Configure proxy for WhatsApp and webhook delivery.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="webhookConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Webhook Events</button></h3>
+        <p class="box-muted">Configure webhook URL and event subscriptions.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="historyConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Message History</button></h3>
+        <p class="box-muted">Configure message history.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="hmacConfig">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">HMAC Key</button></h3>
+        <p class="box-muted">Configure HMAC key for webhook security.</p>
+        
+      </article>
     </div>
 
-    <div class="ui horizontal divider widget"> User </div>
-    <div class="ui three column stackable grid cards">
-      <div class="red card hidden widget" style="cursor: pointer;" id="userInfo">
-        <div class="content"><a class="ui red right ribbon label">User</a>
-          <div class="header">User Info</div>
-          <div class="description"> Search users by phone number.</div>
-        </div>
-      </div>
-      <div class="red card hidden widget" style="cursor: pointer;" id="userAvatar">
-        <div class="content"><a class="ui red right ribbon label">User</a>
-          <div class="header">User Avatar</div>
-          <div class="description"> Get user Avatar by phone number.</div>
-        </div>
-      </div>
-      <div class="red card hidden widget" style="cursor: pointer;" id="userContacts">
-        <div class="content"><a class="ui red right ribbon label">User</a>
-          <div class="header">Get Contacts</div>
-          <div class="description"> Get all contacts.</div>
-        </div>
-      </div>
+    <h2 class="box-divider box-divider-start widget"> User </h2>
+    <div class="grid wsp-grupo">
+      <article class="box-stretch-host wsp-widget widget hidden" id="userInfo">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">User Info</button></h3>
+        <p class="box-muted"> Search users by phone number.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="userAvatar">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">User Avatar</button></h3>
+        <p class="box-muted"> Get user Avatar by phone number.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="userContacts">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Get Contacts</button></h3>
+        <p class="box-muted"> Get all contacts.</p>
+        
+      </article>
     </div>
 
-    <div class="ui horizontal divider widget"> Chat </div>
+    <h2 class="box-divider box-divider-start widget"> Chat </h2>
 
-    <div class="ui three column stackable grid cards">
-      <div class="blue card hidden widget" style="cursor: pointer;" id="sendTextMessage">
-        <div class="content"><a class="ui blue right ribbon label">Chat</a>
-          <div class="header">Send Text Message</div>
-          <div class="description"> Sends a text message.</div>
-        </div>
-      </div>
-      <div class="blue card hidden widget" style="cursor: pointer;" id="deleteMessage">
-        <div class="content"><a class="ui blue right ribbon label">Chat</a>
-          <div class="header">Delete Message</div>
-          <div class="description"> Deletes your sent message.</div>
-        </div>
-      </div>
+    <div class="grid wsp-grupo">
+      <article class="box-stretch-host wsp-widget widget hidden" id="sendTextMessage">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Send Text Message</button></h3>
+        <p class="box-muted"> Sends a text message.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="deleteMessage">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Delete Message</button></h3>
+        <p class="box-muted"> Deletes your sent message.</p>
+        
+      </article>
     </div>
 
-    <div class="ui horizontal divider widget"> Groups </div>
-    <div class="ui three column stackable grid cards">
-      <div class="green card hidden widget" style="cursor: pointer;" id="groupsList">
-        <div class="content"><a class="ui green right ribbon label">Groups</a>
-          <div class="header">List Groups</div>
-          <div class="description">View all your WhatsApp groups.</div>
-        </div>
-      </div>
-      <div class="green card hidden widget" style="cursor: pointer;" id="createGroup">
-        <div class="content"><a class="ui green right ribbon label">Groups</a>
-          <div class="header">Create Group</div>
-          <div class="description">Create a new WhatsApp group.</div>
-        </div>
-      </div>
-      <div class="green card hidden widget" style="cursor: pointer;" id="joinGroup">
-        <div class="content"><a class="ui green right ribbon label">Groups</a>
-          <div class="header">Join Group</div>
-          <div class="description">Join a group using invite link.</div>
-        </div>
-      </div>
+    <h2 class="box-divider box-divider-start widget"> Groups </h2>
+    <div class="grid wsp-grupo">
+      <article class="box-stretch-host wsp-widget widget hidden" id="groupsList">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">List Groups</button></h3>
+        <p class="box-muted">View all your WhatsApp groups.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="createGroup">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Create Group</button></h3>
+        <p class="box-muted">Create a new WhatsApp group.</p>
+        
+      </article>
+      <article class="box-stretch-host wsp-widget widget hidden" id="joinGroup">
+        <h3><button class="box-stretch-link wsp-widget-btn" type="button">Join Group</button></h3>
+        <p class="box-muted">Join a group using invite link.</p>
+        
+      </article>
     </div>
 
   </div>
 
   <!-- Groups Main Container -->
-  <div class="ui container fluid p1 hidden" id="groupsMainContainer">
+  <div class="wsp-contenedor p1 hidden" id="groupsMainContainer">
     <!-- Main Header -->
-    <div class="ui container fluid main-header">
-      <div class="ui stackable grid">
-        <div class="row">
-          <div class="left floated left aligned ten wide column">
-            <h1 class="ui header">
-              <i class="users icon"></i>
+    <div class="wsp-contenedor main-header">
+      <div class="wsp-grid wsp-apilable">
+        <div class="wsp-grid">
+          <div class="wsp-col-10">
+            <h1>
+              <i class="fas fa-users"></i>
               <div class="content">
                 Groups Manager
-                <div class="sub header">Manage your WhatsApp groups</div>
+                <small class="wsp-sub">Manage your WhatsApp groups</small>
               </div>
             </h1>
           </div>
-          <div class="right floated right aligned six wide column">
-            <button class="ui primary button" id="backToDashboard">
-              <i class="left arrow icon"></i> Back to Dashboard
+          <div class="wsp-col-6 wsp-fin">
+            <button class="box-btn" id="backToDashboard" type="button">
+              <i class="fas fa-arrow-left"></i> Back to Dashboard
             </button>
           </div>
         </div>
@@ -274,88 +287,89 @@
     </div>
 
     <!-- Groups Filter and Search -->
-    <div class="ui segment">
-      <div class="ui stackable grid">
-        <div class="six wide column">
-          <div class="ui icon input fluid">
+    <div class="wsp-seccion">
+      <div class="wsp-grid wsp-apilable">
+        <div class="wsp-col-6">
+          <div class="wsp-entrada wsp-con-icono">
             <input type="text" id="groupsSearch" placeholder="Search groups by name or description...">
-            <i class="search icon"></i>
+            <i class="fas fa-magnifying-glass"></i>
           </div>
         </div>
-        <div class="four wide column">
-          <select class="ui fluid dropdown" id="groupsFilter">
+        <div class="wsp-col-4">
+          <select class="wsp-dropdown" id="groupsFilter">
             <option value="">All Groups</option>
             <option value="normal">Normal Groups</option>
             <option value="community">Communities</option>
             <option value="community_group">Community Groups</option>
           </select>
         </div>
-        <div class="three wide column">
-          <div class="ui basic buttons fluid">
-            <button class="ui button" id="refreshGroups">
-              <i class="refresh icon"></i> Refresh
+        <div class="wsp-col-3">
+          <div class="box-btn-group wsp-ancho">
+            <button class="box-btn" id="refreshGroups" type="button">
+              <i class="fas fa-rotate"></i> Refresh
             </button>
           </div>
         </div>
-        <div class="three wide column">
-          <button class="ui green button fluid" id="createNewGroup">
-            <i class="plus icon"></i> Create Group
+        <div class="wsp-col-3">
+          <button class="box-btn box-btn-block" id="createNewGroup" type="button">
+            <i class="fas fa-plus"></i> Create Group
           </button>
         </div>
       </div>
     </div>
 
     <!-- Groups Loading -->
-    <div class="ui active inverted dimmer" id="groupsLoading">
-      <div class="ui text loader">Loading groups...</div>
-    </div>
+    <div class="wsp-cargando active" id="groupsLoading"><span class="box-spinner"></span> <span>Loading groups...</span></div>
 
     <!-- Groups List Container -->
-    <div class="ui relaxed divided list" id="groupsListContainer">
+    <div class="wsp-lista" id="groupsListContainer">
       <!-- Groups will be populated here -->
     </div>
 
     <!-- No Groups Message -->
-    <div class="ui placeholder segment hidden" id="noGroupsMessage">
-      <div class="ui icon header">
-        <i class="users icon"></i>
+    <div class="wsp-seccion hidden" id="noGroupsMessage">
+      <div class="wsp-vacio">
+        <i class="fas fa-users"></i>
         No groups found
       </div>
       <div class="inline">
-        <div class="ui primary button" id="createFirstGroup">Create your first group</div>
+        <button class="box-btn" id="createFirstGroup" type="button">Create your first group</button>
       </div>
     </div>
   </div>
 
   <!-- Session Modals -->
 
-  <div class="ui modal" id="modalLoginWithCode"><i class="close icon"></i>
-    <div class="header"> Getting Pair Code </div>
-    <div class="content">
-      <div class="ui message info">
-        <div class="header" id="pairInfo">How to pair?</div>
+  <dialog id="modalLoginWithCode">
+    <article>
+      <header><span> Getting Pair Code </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta" id="pairInfo">How to pair?</strong>
         <ol id="pairHelp">
           <li>Open your Whatsapp</li>
           <li>Link a device</li>
           <li>Link with pair code</li>
         </ol>
       </div>
-      <div class="ui form">
-        <div class="field"><label>Phone</label><input id="pairphoneinput" type="text" placeholder="Type your phone number"><small>Press Enter to submit</small></div>
+      <div class="wsp-form">
+        <div class="box-field"><label>Phone</label><input id="pairphoneinput" type="text" placeholder="Type your phone number"><small>Press Enter to submit</small></div>
       </div>
     </div>
-  </div>
+      </article>
+  </dialog>
 
   <!-- Webhook Modals -->
 
-  <div class="ui modal" id="modalSetWebhook"><i class="close icon"></i>
-    <div class="header"> Webhook </div>
-    <div class="content">
-      <div class="ui form">
-        <div class="field">
+  <dialog id="modalSetWebhook">
+    <article>
+      <header><span> Webhook </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="wsp-form">
+        <div class="box-field">
           <label>Webhook Events</label>
-          <select id="webhookEvents" class="ui fluid dropdown" multiple="">
-            <option value="">Select Events</option>
+          <select id="webhookEvents" class="wsp-dropdown" multiple size="8">
+            
             <!-- Messages and Communication -->
             <option value="Message">Message</option>
             <option value="UndecryptableMessage">Undecryptable Message</option>
@@ -416,7 +430,7 @@
             <option value="All">All Events</option>
           </select>
         </div>
-        <div class="field"><label>Webhook URL</label><input id="webhookinput" type="text" placeholder="Type webhook URL"></div>
+        <div class="box-field"><label>Webhook URL</label><input id="webhookinput" type="text" placeholder="Type webhook URL"></div>
       </div>
     <br>
     <br>
@@ -424,152 +438,151 @@
     <br>
     <br>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button">Set<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" type="button">Set</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- S3 Configuration Modal -->
-  <div class="ui modal" id="modalS3Config"><i class="close icon"></i>
-    <div class="header"> S3 Configuration </div>
-    <div class="content">
-      <div class="ui info message">
-        <div class="header">S3 Storage Configuration</div>
+  <dialog id="modalS3Config">
+    <article>
+      <header><span> S3 Configuration </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta">S3 Storage Configuration</strong>
         <p>Configure S3-compatible storage for media files. This includes AWS S3, MinIO, DigitalOcean Spaces, and other S3-compatible services.</p>
       </div>
-      <div class="ui form">
-        <div class="field">
+      <div class="wsp-form">
+        <div class="box-field">
           <label>S3 Endpoint URL</label>
           <input id="s3Endpoint" type="text" placeholder="https://s3.amazonaws.com or custom endpoint">
           <small>For AWS S3, use the default. For MinIO/others, use your custom endpoint.</small>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Access Key ID</label>
           <input id="s3AccessKey" type="text" placeholder="Your S3 access key ID">
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Secret Access Key</label>
           <input id="s3SecretKey" type="password" placeholder="Your S3 secret access key">
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Bucket Name</label>
           <input id="s3Bucket" type="text" placeholder="Your S3 bucket name">
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Region</label>
           <input id="s3Region" type="text" placeholder="us-east-1 (optional for some providers)">
           <small>Required for AWS S3. Optional for MinIO and other providers.</small>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Public URL (Optional)</label>
           <input id="s3PublicUrl" type="text" placeholder="https://cdn.example.com">
           <small>Public URL for accessing files (if different from endpoint).</small>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Media Delivery</label>
-          <select class="ui dropdown" id="s3MediaDelivery">
+          <select class="wsp-dropdown" id="s3MediaDelivery">
             <option value="base64">Base64 (Default)</option>
             <option value="s3">S3 URL only</option>
             <option value="both">Both Base64 and S3 URL</option>
           </select>
           <small>How media should be delivered in webhook events.</small>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Retention Days</label>
           <input id="s3RetentionDays" type="number" min="1" value="30" placeholder="30">
           <small>Number of days to retain files in S3 before deletion.</small>
         </div>
-        <div class="field">
-          <div class="ui toggle checkbox">
-            <input type="checkbox" id="s3ForcePathStyle">
-            <label>Force Path Style</label>
-          </div>
+        <div class="box-field">
+          <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" id="s3ForcePathStyle" role="switch"> Force Path Style</label></div>
           <small>Enable for MinIO and some S3-compatible providers.</small>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Cancel</div>
-      <div class="ui button" id="testS3Connection">Test Connection</div>
-      <div class="ui red button" id="deleteS3Config">Delete Configuration</div>
-      <div class="ui positive right labeled icon button" id="saveS3Config">Save<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Cancel</button>
+      <button class="box-btn" id="testS3Connection" type="button">Test Connection</button>
+      <button class="box-btn box-btn-danger" id="deleteS3Config" type="button">Delete Configuration</button>
+      <button class="box-btn positive" id="saveS3Config" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- History Configuration Modal -->
-  <div class="ui modal" id="modalHistoryConfig"><i class="close icon"></i>
-    <div class="header"> History Configuration </div>
-    <div class="content">
-      <div class="ui info message">
-        <div class="header">Message History</div>
+  <dialog id="modalHistoryConfig">
+    <article>
+      <header><span> History Configuration </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta">Message History</strong>
         <p>Number of messages to keep in history database. Set to zero to disable history.</p>
       </div>
-      <div class="ui form">
-        <div class="field" id="messageHistoryField">
+      <div class="wsp-form">
+        <div class="box-field" id="messageHistoryField">
           <label>History</label>
           <input id="history" type="number" min="0" step="1" placeholder="0">
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>History requested on next pairing (days)</label>
           <input id="historySyncDays" type="number" min="0" max="365" step="1" value="0">
           <small>0 uses WhatsApp defaults. Save before starting a new pairing; an existing QR must be restarted. Availability depends on the phone.</small>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Cancel</div>
-      <div class="ui positive right labeled icon button" id="saveProxyConfig">Save<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Cancel</button>
+      <button class="box-btn positive" id="saveProxyConfig" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
 
 
   <!-- Proxy Configuration Modal -->
-  <div class="ui modal" id="modalProxyConfig"><i class="close icon"></i>
-    <div class="header"> Proxy Configuration </div>
-    <div class="content">
-      <div class="ui info message">
-        <div class="header">Proxy Settings</div>
+  <dialog id="modalProxyConfig">
+    <article>
+      <header><span> Proxy Configuration </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta">Proxy Settings</strong>
         <p>Configure HTTP/HTTPS or SOCKS5 proxy for WhatsApp connections. Optionally route webhook deliveries through the same proxy or send them directly to your backend.</p>
       </div>
-      <div class="ui form">
-        <div class="field">
-          <div class="ui toggle checkbox" id="proxyEnabledToggle">
-            <input type="checkbox" id="proxyEnabled">
-            <label>Enable Proxy</label>
-          </div>
+      <div class="wsp-form">
+        <div class="box-field">
+          <div class="wsp-checkbox" id="proxyEnabledToggle"><label class="box-check"><input type="checkbox" id="proxyEnabled" role="switch"> Enable Proxy</label></div>
           <small>Enable or disable proxy for this instance.</small>
         </div>
-        <div class="field" id="proxyUrlField">
+        <div class="box-field" id="proxyUrlField">
           <label>Proxy URL</label>
           <input id="proxyUrl" type="text" placeholder="http://proxy.example.com:8080 or socks5://user:pass@proxy.example.com:1080">
           <small>Include protocol (http://, https://, or socks5://) and port. Authentication can be included in URL format.</small>
         </div>
-        <div class="field" id="proxyWebhookUseProxyField">
-          <div class="ui toggle checkbox" id="proxyWebhookUseProxyToggle">
-            <input type="checkbox" id="proxyWebhookUseProxy" checked>
-            <label>Use proxy for webhook delivery</label>
-          </div>
+        <div class="box-field" id="proxyWebhookUseProxyField">
+          <div class="wsp-checkbox" id="proxyWebhookUseProxyToggle"><label class="box-check"><input type="checkbox" id="proxyWebhookUseProxy" checked role="switch"> Use proxy for webhook delivery</label></div>
           <small>When enabled, outgoing webhook POSTs use the configured proxy. Disable to reach your application backend directly while WhatsApp traffic still uses the proxy.</small>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Cancel</div>
-      <div class="ui positive right labeled icon button" id="saveProxyConfig">Save<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Cancel</button>
+      <button class="box-btn positive" id="saveProxyConfig" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- HMAC Configuration Modal -->
-  <div class="ui modal" id="modalHmacConfig"><i class="close icon"></i>
-    <div class="header"> HMAC Configuration </div>
-    <div class="content">
-      <div class="ui info message">
-        <div class="header">HMAC Key Settings</div>
+  <dialog id="modalHmacConfig">
+    <article>
+      <header><span> HMAC Configuration </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert">
+        <strong class="wsp-titulo-alerta">HMAC Key Settings</strong>
         <p>Configure HMAC key for webhook security. This key will be used to verify webhook authenticity.</p>
       </div>
-      <div class="ui warning message">
-        <div class="header">Important Security Notice</div>
+      <div class="box-alert box-alert-warning">
+        <strong class="wsp-titulo-alerta">Important Security Notice</strong>
         <p>
           <strong>The HMAC key will be hidden after saving for security reasons.</strong><br>
           • You won't be able to view it again<br>
@@ -577,58 +590,59 @@
           • If lost, you'll need to generate a new key
         </p>
       </div>
-      <div class="ui form">
-        <div class="field">
+      <div class="wsp-form">
+        <div class="box-field">
           <label>HMAC Key</label>
           <input id="hmacKey" type="password" placeholder="Enter your HMAC key (minimum 32 characters)">
           <small>Minimum 32 characters for security. Keep this key secret!</small>
         </div>
-        <div class="field">
-          <div class="ui buttons">
-            <button class="ui primary button" id="generateHmacKey">
-              <i class="random icon"></i> Generate Random Key
+        <div class="box-field">
+          <div class="box-btn-group">
+            <button class="box-btn" id="generateHmacKey" type="button">
+              <i class="fas fa-shuffle"></i> Generate Random Key
             </button>
-            <button class="ui black button" id="showHmacKey">
-              <i class="eye icon"></i> Show Key
+            <button class="box-btn secondary" id="showHmacKey" type="button">
+              <i class="fas fa-eye"></i> Show Key
             </button>
-            <button class="ui black button" id="hideHmacKey" style="display: none;">
-              <i class="eye slash icon"></i> Hide Key
+            <button class="box-btn secondary" id="hideHmacKey" style="display: none;" type="button">
+              <i class="fas fa-eye-slash"></i> Hide Key
             </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Cancel</div>
-      <div class="ui red button" id="deleteHmacConfig">Delete Configuration</div>
-      <div class="ui positive right labeled icon button" id="saveHmacConfig">Save<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Cancel</button>
+      <button class="box-btn box-btn-danger" id="deleteHmacConfig" type="button">Delete Configuration</button>
+      <button class="box-btn positive" id="saveHmacConfig" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Add Instance Modal -->
-  <div class="ui large modal" id="addInstanceModal">
-    <i class="close icon"></i>
-    <div class="header">Add New Instance</div>
-    <div class="content">
-      <form class="ui form" id="addInstanceForm">
+  <dialog class="box-modal-lg" id="addInstanceModal">
+    <article>
+      <header><span>Add New Instance</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <form id="addInstanceForm" novalidate>
         <!-- Basic Configuration -->
-        <h4 class="ui dividing header">Basic Configuration</h4>
-        <div class="field">
-          <label>Name <span class="required">*</span></label>
+        <h4 class="box-divider box-divider-start">Basic Configuration</h4>
+        <div class="box-field">
+          <label>Name <span class="box-required">*</span></label>
           <input type="text" name="name" placeholder="Instance name" required>
         </div>
-        <div class="field">
-          <label>Token <span class="required">*</span></label>
+        <div class="box-field">
+          <label>Token <span class="box-required">*</span></label>
           <input type="text" name="token" placeholder="Authentication Token" required>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Webhook URL</label>
           <input type="url" name="webhook_url" placeholder="https://example.com/webhook">
         </div>
-        <div class="field">
-          <label>Events <span class="required">*</span></label>
-          <select name="events" id="webhookEventsInstance" class="ui fluid dropdown" multiple="" required>
-            <option value="">Select Events</option>
+        <div class="box-field">
+          <label>Events <span class="box-required">*</span></label>
+          <select name="events" id="webhookEventsInstance" class="wsp-dropdown" multiple required size="8">
+            
             <!-- Messages and Communication -->
             <option value="Message">Message</option>
             <option value="UndecryptableMessage">Undecryptable Message</option>
@@ -689,117 +703,102 @@
             <option value="All">All Events</option>
           </select>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Message History</label>
           <input type="number" name="history" min="0" value="0" placeholder="0">
           <small>Number of messages to store in history per chat for this instance. Set to 0 to disable message history.</small>
         </div>
 
-        <div class="field">
+        <div class="box-field">
           <label>History requested on pairing (days)</label>
           <input type="number" name="days_to_sync_history" min="0" max="365" step="1" value="0">
           <small>0 uses WhatsApp defaults. Separate from the number of messages retained per chat.</small>
         </div>
 
         <!-- Proxy Configuration -->
-        <h4 class="ui dividing header">Proxy Configuration (Optional)</h4>
-        <div class="field">
-          <div class="ui toggle checkbox" id="addInstanceProxyToggle">
-            <input type="checkbox" name="proxy_enabled">
-            <label>Enable Proxy</label>
-          </div>
+        <h4 class="box-divider box-divider-start">Proxy Configuration (Optional)</h4>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="addInstanceProxyToggle"><label class="box-check"><input type="checkbox" name="proxy_enabled" role="switch"> Enable Proxy</label></div>
           <small>Enable proxy for this instance</small>
         </div>
-        <div class="field" id="addInstanceProxyUrlField" style="display: none;">
+        <div class="box-field" id="addInstanceProxyUrlField" style="display: none;">
           <label>Proxy URL</label>
           <input type="text" name="proxy_url" placeholder="http://proxy.example.com:8080 or socks5://user:pass@proxy.example.com:1080">
           <small>Include protocol (http://, https://, or socks5://) and port. Authentication can be included in URL format.</small>
         </div>
-        <div class="field" id="addInstanceProxyWebhookUseProxyField" style="display: none;">
-          <div class="ui toggle checkbox" id="addInstanceProxyWebhookUseProxyToggle">
-            <input type="checkbox" name="proxy_webhook_use_proxy" checked>
-            <label>Use proxy for webhook delivery</label>
-          </div>
+        <div class="box-field" id="addInstanceProxyWebhookUseProxyField" style="display: none;">
+          <div class="wsp-checkbox" id="addInstanceProxyWebhookUseProxyToggle"><label class="box-check"><input type="checkbox" name="proxy_webhook_use_proxy" checked role="switch"> Use proxy for webhook delivery</label></div>
           <small>Disable to send webhooks directly to your backend while WhatsApp traffic uses the proxy.</small>
         </div>
 
         <!-- S3 Configuration -->
-        <h4 class="ui dividing header">S3 Storage Configuration (Optional)</h4>
-        <div class="field">
-          <div class="ui toggle checkbox" id="addInstanceS3Toggle">
-            <input type="checkbox" name="s3_enabled">
-            <label>Enable S3 Storage</label>
-          </div>
+        <h4 class="box-divider box-divider-start">S3 Storage Configuration (Optional)</h4>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="addInstanceS3Toggle"><label class="box-check"><input type="checkbox" name="s3_enabled" role="switch"> Enable S3 Storage</label></div>
           <small>Enable S3-compatible storage for media files</small>
         </div>
         <div id="addInstanceS3Fields" style="display: none;">
-          <div class="field">
+          <div class="box-field">
             <label>S3 Endpoint URL</label>
             <input type="text" name="s3_endpoint" placeholder="https://s3.amazonaws.com or custom endpoint">
             <small>For AWS S3, leave empty or use default. For MinIO/others, use your custom endpoint.</small>
           </div>
-          <div class="two fields">
-            <div class="field">
+          <div class="box-grid form-grid-2">
+            <div class="box-field">
               <label>Access Key ID</label>
               <input type="text" name="s3_access_key" placeholder="Your S3 access key ID">
             </div>
-            <div class="field">
+            <div class="box-field">
               <label>Secret Access Key</label>
               <input type="password" name="s3_secret_key" placeholder="Your S3 secret access key">
             </div>
           </div>
-          <div class="two fields">
-            <div class="field">
+          <div class="box-grid form-grid-2">
+            <div class="box-field">
               <label>Bucket Name</label>
               <input type="text" name="s3_bucket" placeholder="Your S3 bucket name">
             </div>
-            <div class="field">
+            <div class="box-field">
               <label>Region</label>
               <input type="text" name="s3_region" placeholder="us-east-1">
               <small>Required for AWS S3. Optional for MinIO and other providers.</small>
             </div>
           </div>
-          <div class="field">
+          <div class="box-field">
             <label>Public URL (Optional)</label>
             <input type="text" name="s3_public_url" placeholder="https://cdn.example.com">
             <small>Public URL for accessing files (if different from endpoint).</small>
           </div>
-          <div class="two fields">
-            <div class="field">
+          <div class="box-grid form-grid-2">
+            <div class="box-field">
               <label>Media Delivery</label>
-              <select class="ui dropdown" name="s3_media_delivery" id="addInstanceS3MediaDelivery">
+              <select class="wsp-dropdown" name="s3_media_delivery" id="addInstanceS3MediaDelivery">
                 <option value="base64">Base64 (Default)</option>
                 <option value="s3">S3 URL only</option>
                 <option value="both">Both Base64 and S3 URL</option>
               </select>
               <small>How media should be delivered in webhook events.</small>
             </div>
-            <div class="field">
+            <div class="box-field">
               <label>Retention Days</label>
               <input type="number" name="s3_retention_days" min="1" value="30" placeholder="30">
               <small>Number of days to retain files in S3 before deletion.</small>
             </div>
           </div>
-          <div class="field">
-            <div class="ui toggle checkbox">
-              <input type="checkbox" name="s3_path_style">
-              <label>Force Path Style</label>
-            </div>
+          <div class="box-field">
+            <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" name="s3_path_style" role="switch"> Force Path Style</label></div>
             <small>Enable for MinIO and some S3-compatible providers.</small>
           </div>
         </div>
 
         <!-- HMAC Configuration -->
-        <h4 class="ui dividing header">HMAC Configuration (Optional)</h4>
-        <div class="field">
-          <div class="ui toggle checkbox" id="addInstanceHmacToggle">
-            <input type="checkbox" name="hmac_enabled">
-            <label>Enable HMAC Key</label>
-          </div>
+        <h4 class="box-divider box-divider-start">HMAC Configuration (Optional)</h4>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="addInstanceHmacToggle"><label class="box-check"><input type="checkbox" name="hmac_enabled" role="switch"> Enable HMAC Key</label></div>
           <small>Enable HMAC key for webhook security</small>
         </div>
-        <div class="ui warning message" id="addInstanceHmacKeyWarningMessage" style="display: none;">
-          <div class="header">Important Security Notice</div>
+        <div class="box-alert box-alert-warning" id="addInstanceHmacKeyWarningMessage" style="display: none;">
+          <strong class="wsp-titulo-alerta">Important Security Notice</strong>
           <p>
             <strong>The HMAC key will be hidden after saving for security reasons.</strong><br>
             • You won't be able to view it again<br>
@@ -807,191 +806,204 @@
             • If lost, you'll need to generate a new key
           </p>
         </div>
-        <div class="field"
-         id="addInstanceHmacKeyField" style="display: none;">
+        <div class="box-field" id="addInstanceHmacKeyField" style="display: none;">
           <label>HMAC Key</label>
           <input type="password" name="hmac_key" placeholder="Enter HMAC key (minimum 32 characters)">
           <small>Minimum 32 characters for security. Keep this key secret!</small>
-          <div class="ui buttons" style="margin-top: 10px;">
-            <button type="button" class="ui primary button" id="generateHmacKeyInstance">
-              <i class="random icon"></i> Generate Random Key
+          <div class="box-btn-group" style="margin-top: 10px;">
+            <button type="button" class="box-btn" id="generateHmacKeyInstance">
+              <i class="fas fa-shuffle"></i> Generate Random Key
             </button>
-            <button type="button" class="ui black button" id="showHmacKeyInstance">
-              <i class="eye icon"></i> Show Key
+            <button type="button" class="box-btn secondary" id="showHmacKeyInstance">
+              <i class="fas fa-eye"></i> Show Key
             </button>
-            <button type="button" class="ui black button" id="hideHmacKeyInstance" style="display: none;">
-              <i class="eye slash icon"></i> Hide Key
+            <button type="button" class="box-btn secondary" id="hideHmacKeyInstance" style="display: none;">
+              <i class="fas fa-eye-slash"></i> Hide Key
             </button>
           </div>
         </div>
 
-        <div class="ui error message"></div>
+        <div class="box-alert box-alert-danger"></div>
       </form>
     </div>
-    <div class="actions">
-      <button class="ui black deny button">Cancel</button>
-      <button type="submit" form="addInstanceForm" class="ui positive right labeled icon button">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Cancel</button>
+      <button type="submit" form="addInstanceForm" class="box-btn positive">
         Submit
-        <i class="checkmark icon"></i>
+        
       </button>
-    </div>
-  </div>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Instance Delete Confirmation Modal -->
 
-  <div class="ui small modal" id="deleteInstanceModal">
-    <div class="header">Delete Instance</div>
-    <div class="content">
+  <dialog class="box-modal-sm" id="deleteInstanceModal">
+    <article>
+      <header><span>Delete Instance</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
       <p>Are you sure you want to delete this instance? This action cannot be undone.</p>
     </div>
-    <div class="actions">
-      <div class="ui negative button">No</div>
-      <div class="ui positive right labeled icon button" id="confirmDeleteButton">
+      <footer>
+      <button class="box-btn box-btn-danger negative" type="button">No</button>
+      <button class="box-btn positive" id="confirmDeleteButton" type="button">
         Yes
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
-  <div class="ui small modal" id="preserveDevicesModal">
-    <div class="header">Device ownership is ambiguous</div>
-    <div class="content">
+  <dialog class="box-modal-sm" id="preserveDevicesModal">
+    <article>
+      <header><span>Device ownership is ambiguous</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
       <p>Several stored WhatsApp devices match this account. We cannot safely determine which device belongs to this instance.</p>
       <p>You can delete the instance, its message history and its files while preserving all WhatsApp credentials. Devices will remain linked to the phone. This action cannot be undone.</p>
     </div>
-    <div class="actions">
-      <div class="ui negative button">Cancel</div>
-      <div class="ui positive button">Delete and preserve devices</div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn box-btn-danger negative" type="button">Cancel</button>
+      <button class="box-btn positive" type="button">Delete and preserve devices</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Proxy Pool Modals -->
-  <div class="ui small modal" id="modalProxyPoolEntry"><i class="close icon"></i>
-    <div class="header" id="proxyPoolModalTitle">Add Proxy</div>
-    <div class="content">
-      <div class="ui negative message hidden" id="proxyPoolFormError"></div>
-      <form class="ui form" id="proxyPoolForm" onsubmit="return false;">
-        <div class="field">
+  <dialog class="box-modal-sm" id="modalProxyPoolEntry">
+    <article>
+      <header><span id="proxyPoolModalTitle">Add Proxy</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert box-alert-danger hidden" id="proxyPoolFormError"></div>
+      <form id="proxyPoolForm" onsubmit="return false;">
+        <div class="box-field">
           <label>Label</label>
           <input type="text" id="proxyPoolLabel" placeholder="residential-1">
         </div>
-        <div class="required field">
+        <div class="box-field">
           <label>Proxy URL</label>
           <input type="text" id="proxyPoolUrl" placeholder="socks5://user:pass@203.0.113.10:1080 or http://203.0.113.10:3128">
           <small id="proxyPoolUrlHelp">Only http:// and socks5:// proxies are supported.</small>
         </div>
-        <div class="required field">
+        <div class="box-field">
           <label>Max devices</label>
           <input type="number" id="proxyPoolMaxDevices" min="1" value="1">
           <small>How many instances may be assigned to this proxy.</small>
         </div>
-        <div class="field">
-          <div class="ui toggle checkbox" id="proxyPoolEnabledToggle">
-            <input type="checkbox" id="proxyPoolEnabled" checked>
-            <label>Enabled</label>
-          </div>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="proxyPoolEnabledToggle"><label class="box-check"><input type="checkbox" id="proxyPoolEnabled" checked role="switch"> Enabled</label></div>
           <small>Disabled proxies keep their current instances but receive no new ones.</small>
         </div>
       </form>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Cancel</div>
-      <div class="ui positive right labeled icon button">Save<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Cancel</button>
+      <button class="box-btn positive" type="button">Save</button>
+    </footer>
+    </article>
+  </dialog>
 
-  <div class="ui small modal" id="modalDeleteProxyPoolEntry">
-    <div class="header">Delete Proxy</div>
-    <div class="content">
+  <dialog class="box-modal-sm" id="modalDeleteProxyPoolEntry">
+    <article>
+      <header><span>Delete Proxy</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
       <p>Are you sure you want to remove <b id="deleteProxyPoolLabel"></b> from the pool?</p>
     </div>
-    <div class="actions">
-      <div class="ui negative button">No</div>
-      <div class="ui positive right labeled icon button">Yes<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn box-btn-danger negative" type="button">No</button>
+      <button class="box-btn positive" type="button">Yes</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- User Modals -->
 
-  <div class="ui modal" id="modalUserInfo"><i class="close icon"></i>
-    <div class="header"> User Info </div>
-    <div class="content">
-      <div class="ui message info hidden" id="userInfoContainer"></div>
-      <div class="ui form">
-        <div class="field"><label for="userinfoinput">Phone or account JID</label><input id="userinfoinput" type="text" placeholder="5491112345678 or account@lid"></div>
-        <button type="button" class="ui teal button" id="getBusinessProfile">Get Business Profile</button>
-        <div class="ui message hidden" id="businessProfileContainer" role="status" aria-live="polite" style="overflow-wrap:anywhere"></div>
+  <dialog id="modalUserInfo">
+    <article>
+      <header><span> User Info </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert hidden" id="userInfoContainer"></div>
+      <div class="wsp-form">
+        <div class="box-field"><label for="userinfoinput">Phone or account JID</label><input id="userinfoinput" type="text" placeholder="5491112345678 or account@lid"></div>
+        <button type="button" class="box-btn" id="getBusinessProfile">Get Business Profile</button>
+        <div class="box-alert hidden" id="businessProfileContainer" role="status" aria-live="polite" style="overflow-wrap:anywhere"></div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button">Get Info<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" type="button">Get Info</button>
+    </footer>
+    </article>
+  </dialog>
 
-  <div class="ui modal" id="modalUserAvatar"><i class="close icon"></i>
-    <div class="header"> User Avatar </div>
-    <div class="content">
-      <div class="ui message info hidden" id="userAvatarContainer"></div>
-      <div class="ui form">
-        <div class="field"><label>Phone</label><input id="useravatarinput" type="text" placeholder="Type phone number"></div>
+  <dialog id="modalUserAvatar">
+    <article>
+      <header><span> User Avatar </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert hidden" id="userAvatarContainer"></div>
+      <div class="wsp-form">
+        <div class="box-field"><label>Phone</label><input id="useravatarinput" type="text" placeholder="Type phone number"></div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button">Get Avatar<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" type="button">Get Avatar</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Message Modals -->
 
-  <div class="ui modal" id="modalSendTextMessage"><i class="close icon"></i>
-    <div class="header"> Send Text Message </div>
-    <div class="content">
-      <div class="ui message info hidden" id="sendMessageContainer"></div>
-      <div class="ui form">
-        <div class="field"><label>Phone</label><input id="messagesendphone" type="text" placeholder="Type phone number"></div>
-        <div class="field"><label>Message</label><textarea id="messagesendtext"></textarea></div>
-        <div class="field">
-          <div class="ui checkbox"><input type="checkbox" id="messageMentionAll" disabled><label for="messageMentionAll">Mention all group members</label></div>
+  <dialog id="modalSendTextMessage">
+    <article>
+      <header><span> Send Text Message </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert hidden" id="sendMessageContainer"></div>
+      <div class="wsp-form">
+        <div class="box-field"><label>Phone</label><input id="messagesendphone" type="text" placeholder="Type phone number"></div>
+        <div class="box-field"><label>Message</label><textarea id="messagesendtext"></textarea></div>
+        <div class="box-field">
+          <div class="wsp-checkbox"><label class="box-check"><input type="checkbox" id="messageMentionAll" disabled> Mention all group members</label></div>
           <p id="mentionAllHelp">Enter a group JID ending in @g.us to enable this. Members are mentioned without adding phone numbers to the message.</p>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button">Send<i class="checkmark icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" type="button">Send</button>
+    </footer>
+    </article>
+  </dialog>
 
-  <div class="ui modal" id="modalDeleteMessage"><i class="close icon"></i>
-    <div class="header"> Delete Message </div>
-    <div class="content">
-      <div class="ui message info hidden" id="deleteMessageContainer"></div>
-      <div class="ui form">
-        <div class="field"><label>Phone</label><input id="messagedeletephone" type="text" placeholder="Type phone number"></div>
-        <div class="field"><label>Message ID</label><input id="messagedeleteid" type="text" placeholder="Type the message id"></div>
+  <dialog id="modalDeleteMessage">
+    <article>
+      <header><span> Delete Message </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert hidden" id="deleteMessageContainer"></div>
+      <div class="wsp-form">
+        <div class="box-field"><label>Phone</label><input id="messagedeletephone" type="text" placeholder="Type phone number"></div>
+        <div class="box-field"><label>Message ID</label><input id="messagedeleteid" type="text" placeholder="Type the message id"></div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button">Delete<i class="trash icon"></i></div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" type="button">Delete<i class="fas fa-trash"></i></button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Groups Modals -->
 
   <!-- Group Details Modal -->
-  <div class="ui large modal" id="modalGroupDetails">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="users icon"></i>
+  <dialog class="box-modal-lg" id="modalGroupDetails">
+    <article>
+      <header><span>
+      <i class="fas fa-users"></i>
       <span id="groupDetailsTitle">Group Details</span>
-    </div>
-    <div class="content">
-      <div class="ui stackable grid">
-        <div class="sixteen wide column">
-          <div class="ui relaxed list">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="wsp-grid wsp-apilable">
+        <div class="wsp-col-16">
+          <div class="wsp-lista">
             <div class="item">
               <div class="header">Group Name</div>
               <div id="groupDetailsName">-</div>
@@ -1013,172 +1025,175 @@
       </div>
       
       <!-- Participants List -->
-      <div class="ui divider"></div>
-      <h4 class="ui header">
-        <i class="users icon"></i>
+      <hr>
+      <h4>
+        <i class="fas fa-users"></i>
         Participants
       </h4>
-      <div class="ui relaxed divided list" id="groupParticipantsList">
+      <div class="wsp-lista" id="groupParticipantsList">
         <!-- Participants will be populated here -->
       </div>
     </div>
-    <div class="actions">
-      <div class="ui stackable grid">
+      <footer>
+      <div class="wsp-grid wsp-apilable">
         <!-- Basic Actions -->
-        <div class="eight wide column">
-          <h5 class="ui header">Basic Actions</h5>
-          <div class="ui fluid buttons">
-            <button class="ui blue button" id="editGroupInfoBtn">
-              <i class="edit icon"></i> Edit Info
+        <div class="wsp-col-8">
+          <h5>Basic Actions</h5>
+          <div class="box-btn-group wsp-ancho">
+            <button class="box-btn" id="editGroupInfoBtn" type="button">
+              <i class="fas fa-pen-to-square"></i> Edit Info
         </button>
-            <button class="ui green button" id="manageParticipantsBtn">
-              <i class="users icon"></i> Participants
+            <button class="box-btn" id="manageParticipantsBtn" type="button">
+              <i class="fas fa-users"></i> Participants
         </button>
           </div>
         </div>
         
         <!-- Admin Actions -->
-        <div class="eight wide column" id="adminActionsSection" style="display: none;">
-          <h5 class="ui header">Admin Actions</h5>
-          <div class="ui fluid buttons">
-            <button class="ui orange button" id="groupSettingsBtn">
-          <i class="settings icon"></i> Settings
+        <div class="wsp-col-8" id="adminActionsSection" style="display: none;">
+          <h5>Admin Actions</h5>
+          <div class="box-btn-group wsp-ancho">
+            <button class="box-btn" id="groupSettingsBtn" type="button">
+          <i class="fas fa-gear"></i> Settings
         </button>
-            <button class="ui purple button" id="groupInviteLinkBtn">
-              <i class="linkify icon"></i> Invite Link
+            <button class="box-btn" id="groupInviteLinkBtn" type="button">
+              <i class="fas fa-link"></i> Invite Link
             </button>
           </div>
         </div>
         
         <!-- Danger Zone -->
-        <div class="sixteen wide column">
-          <div class="ui divider"></div>
-          <h5 class="ui red header">Danger Zone</h5>
-          <button class="ui red button fluid" id="leaveGroupBtn">
-          <i class="sign out icon"></i> Leave Group
+        <div class="wsp-col-16">
+          <hr>
+          <h5>Danger Zone</h5>
+          <button class="box-btn box-btn-danger box-btn-block" id="leaveGroupBtn" type="button">
+          <i class="fas fa-right-from-bracket"></i> Leave Group
         </button>
         </div>
       </div>
-    </div>
-  </div>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Create Group Modal -->
-  <div class="ui modal" id="modalCreateGroup">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="plus icon"></i>
+  <dialog id="modalCreateGroup">
+    <article>
+      <header><span>
+      <i class="fas fa-plus"></i>
       Create New Group
-    </div>
-    <div class="content">
-      <form class="ui form" id="createGroupForm">
-        <div class="field">
-          <label>Group Name <span class="required">*</span></label>
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <form id="createGroupForm">
+        <div class="box-field">
+          <label>Group Name <span class="box-required">*</span></label>
           <input type="text" name="groupName" placeholder="Enter group name" required maxlength="25">
         </div>
-        <div class="field">
-          <label>Participants <span class="required">*</span></label>
-          <div class="ui info message" id="contactsStatus" style="display: none;">
-            <i class="info circle icon"></i>
+        <div class="box-field">
+          <label>Participants <span class="box-required">*</span></label>
+          <div class="box-alert" id="contactsStatus" style="display: none;">
+            <i class="fas fa-circle-info"></i>
             <span id="contactsStatusText">Click "Load Contacts" to populate the participants list.</span>
           </div>
-          <div class="ui fluid action input" style="margin-bottom: 10px;">
-            <button type="button" class="ui blue button" id="loadContactsBtn">
-              <i class="users icon"></i> Load Contacts
+          <div class="wsp-entrada wsp-con-accion" style="margin-bottom: 10px;">
+            <button type="button" class="box-btn" id="loadContactsBtn">
+              <i class="fas fa-users"></i> Load Contacts
             </button>
           </div>
-          <div class="ui fluid multiple search selection dropdown" id="participantsDropdown">
+          <div class="wsp-dropdown wsp-multiselect" id="participantsDropdown">
             <input type="hidden" name="participants">
-            <i class="dropdown icon"></i>
+            
             <div class="default text">Select participants</div>
             <div class="menu">
               <!-- Contacts will be populated here -->
             </div>
           </div>
         </div>
-        <div class="ui error message"></div>
+        <div class="box-alert box-alert-danger"></div>
       </form>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Cancel</div>
-      <div class="ui positive right labeled icon button" id="createGroupSubmit">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Cancel</button>
+      <button class="box-btn positive" id="createGroupSubmit" type="button">
         Create Group
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Join Group Modal -->
-  <div class="ui modal" id="modalJoinGroup">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="add user icon"></i>
+  <dialog id="modalJoinGroup">
+    <article>
+      <header><span>
+      <i class="fas fa-user-plus"></i>
       Join Group
-    </div>
-    <div class="content">
-      <form class="ui form" id="joinGroupForm">
-        <div class="field">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <form id="joinGroupForm">
+        <div class="box-field">
           <label>Invite Link or Code</label>
           <input type="text" name="inviteCode" placeholder="Paste invite link or enter code" required>
-          <div class="ui description">
+          <div class="box-muted">
             Paste the full WhatsApp invite link or just the invite code
           </div>
         </div>
-        <div class="ui info message hidden" id="groupPreviewContainer">
-          <div class="header">Group Preview</div>
+        <div class="box-alert hidden" id="groupPreviewContainer">
+          <strong class="wsp-titulo-alerta">Group Preview</strong>
           <div id="groupPreviewContent">
             <!-- Group preview will be shown here -->
           </div>
         </div>
-        <div class="ui error message"></div>
+        <div class="box-alert box-alert-danger"></div>
       </form>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Cancel</div>
-      <div class="ui button" id="previewGroupBtn">
-        <i class="eye icon"></i> Preview Group
-      </div>
-      <div class="ui positive right labeled icon button" id="joinGroupSubmit">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Cancel</button>
+      <button class="box-btn" id="previewGroupBtn" type="button">
+        <i class="fas fa-eye"></i> Preview Group
+      </button>
+      <button class="box-btn positive" id="joinGroupSubmit" type="button">
         Join Group
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Edit Group Modal -->
-  <div class="ui modal" id="modalEditGroup">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="edit icon"></i>
+  <dialog id="modalEditGroup">
+    <article>
+      <header><span>
+      <i class="fas fa-pen-to-square"></i>
       Edit Group
-    </div>
-    <div class="content">
-      <form class="ui form" id="editGroupForm">
-        <div class="field">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <form id="editGroupForm">
+        <div class="box-field">
           <label>Group Name</label>
           <input type="text" name="editGroupName" placeholder="Enter group name" maxlength="25">
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Group Description</label>
           <textarea name="editGroupDescription" placeholder="Enter group description" rows="3"></textarea>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Group Photo</label>
-          <div class="ui segment">
-            <div class="ui stackable grid">
-              <div class="four wide column center aligned">
-                <img id="currentGroupPhoto" class="ui small circular image" src="" alt="Current Photo" style="display: none;">
-                <div id="noCurrentPhoto" class="ui icon header">
-                  <i class="users icon"></i>
+          <div class="wsp-seccion">
+            <div class="wsp-grid wsp-apilable">
+              <div class="wsp-col-4">
+                <img id="currentGroupPhoto" class="wsp-avatar" src="" alt="Current Photo" style="display: none;">
+                <div id="noCurrentPhoto" class="wsp-vacio">
+                  <i class="fas fa-users"></i>
                   No Photo
                 </div>
               </div>
-              <div class="twelve wide column">
-                <div class="ui buttons">
-                  <button type="button" class="ui button" id="changePhotoBtn">
-                    <i class="camera icon"></i> Change Photo
+              <div class="wsp-col-12">
+                <div class="box-btn-group">
+                  <button type="button" class="box-btn" id="changePhotoBtn">
+                    <i class="fas fa-camera"></i> Change Photo
                   </button>
-                  <button type="button" class="ui negative button" id="removePhotoBtn">
-                    <i class="trash icon"></i> Remove Photo
+                  <button type="button" class="box-btn box-btn-danger negative" id="removePhotoBtn">
+                    <i class="fas fa-trash"></i> Remove Photo
                   </button>
                 </div>
                 <input type="file" id="editGroupPhotoInput" accept="image/*" style="display: none;">
@@ -1186,82 +1201,77 @@
             </div>
           </div>
         </div>
-        <div class="ui error message"></div>
+        <div class="box-alert box-alert-danger"></div>
       </form>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Cancel</div>
-      <div class="ui positive right labeled icon button" id="saveGroupChanges">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Cancel</button>
+      <button class="box-btn positive" id="saveGroupChanges" type="button">
         Save Changes
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Group Settings Modal -->
-  <div class="ui modal" id="modalGroupSettings">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="settings icon"></i>
+  <dialog id="modalGroupSettings">
+    <article>
+      <header><span>
+      <i class="fas fa-gear"></i>
       Group Settings
-    </div>
-    <div class="content">
-      <div class="ui form">
-        <h4 class="ui dividing header">Message Permissions</h4>
-        <div class="field">
-          <div class="ui toggle checkbox" id="announceOnlyToggle">
-            <input type="checkbox">
-            <label>Only admins can send messages</label>
-          </div>
-          <div class="ui description">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="wsp-form">
+        <h4 class="box-divider box-divider-start">Message Permissions</h4>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="announceOnlyToggle"><label class="box-check"><input type="checkbox" role="switch"> Only admins can send messages</label></div>
+          <div class="box-muted">
             When enabled, only group admins can send messages to this group.
           </div>
         </div>
         
-        <h4 class="ui dividing header">Group Information</h4>
-        <div class="field">
-          <div class="ui toggle checkbox" id="editInfoToggle">
-            <input type="checkbox">
-            <label>Only admins can edit group info</label>
-          </div>
-          <div class="ui description">
+        <h4 class="box-divider box-divider-start">Group Information</h4>
+        <div class="box-field">
+          <div class="wsp-checkbox" id="editInfoToggle"><label class="box-check"><input type="checkbox" role="switch"> Only admins can edit group info</label></div>
+          <div class="box-muted">
             When enabled, only group admins can edit group name, description, and photo.
           </div>
         </div>
         
-        <h4 class="ui dividing header">Disappearing Messages</h4>
-        <div class="field">
+        <h4 class="box-divider box-divider-start">Disappearing Messages</h4>
+        <div class="box-field">
           <label>Message Timer</label>
-          <select class="ui dropdown" id="disappearingTimerSelect">
+          <select class="wsp-dropdown" id="disappearingTimerSelect">
             <option value="off">Off</option>
             <option value="24h">24 hours</option>
             <option value="7d">7 days</option>
             <option value="90d">90 days</option>
           </select>
-          <div class="ui description">
+          <div class="box-muted">
             Messages will automatically disappear after the selected time.
           </div>
         </div>
 
-        <h4 class="ui dividing header">Group Photo</h4>
-        <div class="field">
-          <div class="ui segment">
-            <div class="ui stackable grid">
-              <div class="four wide column center aligned">
+        <h4 class="box-divider box-divider-start">Group Photo</h4>
+        <div class="box-field">
+          <div class="wsp-seccion">
+            <div class="wsp-grid wsp-apilable">
+              <div class="wsp-col-4">
                 <div id="currentGroupPhotoContainer">
-                  <div class="ui icon header">
-                    <i class="users icon"></i>
+                  <div class="wsp-vacio">
+                    <i class="fas fa-users"></i>
                     No Photo
                   </div>
                 </div>
               </div>
-              <div class="twelve wide column">
-                <div class="ui buttons">
-                  <button type="button" class="ui button" id="changeGroupPhotoBtn">
-                    <i class="camera icon"></i> Change Photo
+              <div class="wsp-col-12">
+                <div class="box-btn-group">
+                  <button type="button" class="box-btn" id="changeGroupPhotoBtn">
+                    <i class="fas fa-camera"></i> Change Photo
             </button>
-                  <button type="button" class="ui negative button" id="removeGroupPhotoBtn">
-                    <i class="trash icon"></i> Remove Photo
+                  <button type="button" class="box-btn box-btn-danger negative" id="removeGroupPhotoBtn">
+                    <i class="fas fa-trash"></i> Remove Photo
             </button>
                 </div>
                 <input type="file" id="groupPhotoInput" accept="image/*" style="display: none;">
@@ -1271,194 +1281,205 @@
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Close</div>
-      <div class="ui positive right labeled icon button" id="saveGroupSettingsBtn">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Close</button>
+      <button class="box-btn positive" id="saveGroupSettingsBtn" type="button">
         Save Settings
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Manage Participants Modal -->
-  <div class="ui large modal" id="modalManageParticipants">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="users icon"></i>
+  <dialog class="box-modal-lg" id="modalManageParticipants">
+    <article>
+      <header><span>
+      <i class="fas fa-users"></i>
       Manage Participants
-    </div>
-    <div class="content">
-      <div class="ui stackable grid">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="wsp-grid wsp-apilable">
         <!-- Add Participants Section -->
-        <div class="eight wide column">
-          <h4 class="ui header">
-            <i class="plus icon"></i>
+        <div class="wsp-col-8">
+          <h4>
+            <i class="fas fa-plus"></i>
             Add Participants
           </h4>
-          <div class="ui form">
-            <div class="field">
+          <div class="wsp-form">
+            <div class="box-field">
               <label>Load Contacts</label>
-              <button type="button" class="ui blue button fluid" id="loadContactsForParticipantsBtn">
-                <i class="users icon"></i> Load Contacts
+              <button type="button" class="box-btn box-btn-block" id="loadContactsForParticipantsBtn">
+                <i class="fas fa-users"></i> Load Contacts
               </button>
-              <div class="ui info message" id="participantsContactsStatus" style="display: none;">
+              <div class="box-alert" id="participantsContactsStatus" style="display: none;">
                 <span id="participantsContactsStatusText">Click "Load Contacts" to populate the list.</span>
               </div>
             </div>
-            <div class="field">
+            <div class="box-field">
               <label>Select Contacts to Add</label>
-              <div class="ui fluid multiple search selection dropdown" id="addParticipantsDropdown">
+              <div class="wsp-dropdown wsp-multiselect" id="addParticipantsDropdown">
                 <input type="hidden" name="newParticipants">
-                <i class="dropdown icon"></i>
+                
                 <div class="default text">Select contacts to add</div>
                 <div class="menu">
                   <!-- Available contacts will be populated here -->
                 </div>
               </div>
             </div>
-            <button class="ui green button fluid" id="addParticipantsBtn">
-              <i class="plus icon"></i> Add Selected Participants
+            <button class="box-btn box-btn-block" id="addParticipantsBtn" type="button">
+              <i class="fas fa-plus"></i> Add Selected Participants
             </button>
           </div>
         </div>
         
         <!-- Current Participants Section -->
-        <div class="eight wide column">
-          <h4 class="ui header">
-            <i class="users icon"></i>
+        <div class="wsp-col-8">
+          <h4>
+            <i class="fas fa-users"></i>
             Current Participants
           </h4>
-          <div class="ui relaxed divided list" id="manageParticipantsList">
+          <div class="wsp-lista" id="manageParticipantsList">
             <!-- Current participants will be populated here -->
           </div>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Close</div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn secondary deny" type="button">Close</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Confirmation Modal -->
-  <div class="ui small modal" id="confirmationModal">
-    <div class="header" id="confirmationTitle">Confirm Action</div>
-    <div class="content">
+  <dialog class="box-modal-sm" id="confirmationModal">
+    <article>
+      <header><span id="confirmationTitle">Confirm Action</span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
       <p id="confirmationMessage">Are you sure you want to perform this action?</p>
     </div>
-    <div class="actions">
-      <div class="ui negative button">No</div>
-      <div class="ui positive right labeled icon button" id="confirmationYes">
+      <footer>
+      <button class="box-btn box-btn-danger negative" type="button">No</button>
+      <button class="box-btn positive" id="confirmationYes" type="button">
         Yes
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Edit Group Info Modal -->
-  <div class="ui modal" id="modalEditGroupInfo">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="edit icon"></i>
+  <dialog id="modalEditGroupInfo">
+    <article>
+      <header><span>
+      <i class="fas fa-pen-to-square"></i>
       Edit Group Information
-    </div>
-    <div class="content">
-      <form class="ui form" id="editGroupInfoForm">
-        <div class="field">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <form id="editGroupInfoForm">
+        <div class="box-field">
           <label>Group Name</label>
           <input type="text" name="groupName" id="editGroupNameInput" placeholder="Enter group name" maxlength="25" required>
         </div>
-        <div class="field">
+        <div class="box-field">
           <label>Group Description</label>
           <textarea name="groupDescription" id="editGroupDescriptionInput" placeholder="Enter group description" rows="3"></textarea>
         </div>
-        <div class="ui error message"></div>
+        <div class="box-alert box-alert-danger"></div>
       </form>
     </div>
-    <div class="actions">
-      <div class="ui black deny button">Cancel</div>
-      <div class="ui positive right labeled icon button" id="saveGroupInfoBtn">
+      <footer>
+      <button class="box-btn secondary deny" type="button">Cancel</button>
+      <button class="box-btn positive" id="saveGroupInfoBtn" type="button">
         Save Changes
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Group Invite Link Modal -->
-  <div class="ui modal" id="modalGroupInviteLink">
-    <i class="close icon"></i>
-    <div class="header">
-      <i class="linkify icon"></i>
+  <dialog id="modalGroupInviteLink">
+    <article>
+      <header><span>
+      <i class="fas fa-link"></i>
       Group Invite Link
-    </div>
-    <div class="content">
-      <div class="ui segment">
-        <h4 class="ui header">Current Invite Link</h4>
-        <div class="ui action input fluid">
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="wsp-seccion">
+        <h4>Current Invite Link</h4>
+        <div class="wsp-entrada wsp-con-accion">
           <input type="text" id="currentInviteLink" readonly placeholder="Loading...">
-          <button type="button" class="ui icon button" id="copyInviteLinkBtn">
-            <i class="copy icon"></i>
+          <button type="button" class="box-btn" id="copyInviteLinkBtn">
+            <i class="fas fa-copy"></i>
           </button>
         </div>
-        <div class="ui description">
+        <div class="box-muted">
           Share this link to invite people to join the group.
         </div>
       </div>
       
-      <div class="ui warning message">
-        <div class="header">Reset Invite Link</div>
+      <div class="box-alert box-alert-warning">
+        <strong class="wsp-titulo-alerta">Reset Invite Link</strong>
         <p>Resetting the invite link will invalidate the current link and create a new one. Anyone with the old link will no longer be able to join.</p>
-        <button class="ui orange button" id="resetInviteLinkBtn">
-          <i class="refresh icon"></i> Reset Link
+        <button class="box-btn" id="resetInviteLinkBtn" type="button">
+          <i class="fas fa-rotate"></i> Reset Link
         </button>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui button">Close</div>
-    </div>
-  </div>
+      <footer>
+      <button class="box-btn" type="button">Close</button>
+    </footer>
+    </article>
+  </dialog>
 
   <!-- Passkey Pairing Modal -->
-  <div class="ui modal" id="modalPasskeyPairing"><i class="close icon"></i>
-    <div class="header">
-      <i class="key icon"></i> Passkey Pairing
-    </div>
-    <div class="content">
-      <div class="ui warning message">
-        <div class="header">
-          <i class="info circle icon"></i> Passkey Authentication Required
-        </div>
+  <dialog id="modalPasskeyPairing">
+    <article>
+      <header><span>
+      <i class="fas fa-key"></i> Passkey Pairing
+    </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+      <div class="box-alert box-alert-warning">
+        <strong class="wsp-titulo-alerta">
+          <i class="fas fa-circle-info"></i> Passkey Authentication Required
+        </strong>
         <p>After scanning the QR code, WhatsApp requested passkey verification. Follow the steps below to complete the connection.</p>
       </div>
 
-      <h4 class="ui header">Step 1 — Copy and run the code in your browser console</h4>
+      <h4>Step 1 — Copy and run the code in your browser console</h4>
       <p>Open <strong>https://web.whatsapp.com</strong>, press <kbd style="padding:2px 6px;border:1px solid #ccc;border-radius:3px;background:#f5f5f5;">F12</kbd>, paste in the console and press <kbd style="padding:2px 6px;border:1px solid #ccc;border-radius:3px;background:#f5f5f5;">Enter</kbd>.</p>
-      <div class="ui segment" style="position:relative;">
+      <div class="wsp-seccion" style="position:relative;">
         <pre id="passkeyCodeBlock" style="max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:4px;font-size:12px;">Loading...</pre>
-        <button class="ui small button" style="position:absolute;top:8px;right:8px;" onclick="copyPasskeyCode()">
-          <i class="copy icon"></i> Copy
+        <button class="box-btn box-btn-sm" style="position:absolute;top:8px;right:8px;" onclick="copyPasskeyCode()" type="button">
+          <i class="fas fa-copy"></i> Copy
         </button>
       </div>
 
-      <h4 class="ui header" style="margin-top:20px;">Step 2 — Paste the console result here</h4>
-      <div class="ui form">
-        <div class="field">
-          <textarea id="passkeyResponseInput" rows="4" placeholder='Paste the JSON returned by the console here...'></textarea>
+      <h4 style="margin-top:20px;">Step 2 — Paste the console result here</h4>
+      <div class="wsp-form">
+        <div class="box-field">
+          <textarea id="passkeyResponseInput" rows="4" placeholder="Paste the JSON returned by the console here..."></textarea>
         </div>
       </div>
     </div>
-    <div class="actions">
-      <div class="ui cancel button secondary">Close</div>
-      <div class="ui positive right labeled icon button" id="sendPasskeyBtn" onclick="submitPasskeyResponse()">
+      <footer>
+      <button class="box-btn secondary cancel" type="button">Close</button>
+      <button class="box-btn positive" id="sendPasskeyBtn" onclick="submitPasskeyResponse()" type="button">
         Send Response
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
+        
+      </button>
+    </footer>
+    </article>
+  </dialog>
 
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.js"></script>
+  <script src="/assets/lib/jquery/jquery.min.js"></script>
+  <script src="/assets/js/box-ui.js"></script>
+  <script src="/assets/js/wsp-dialog.js"></script>
+  <script src="/assets/js/wsp-compat.js"></script>
   <script src="js/app.js?v=conversation-tools-1"></script>
   <script src="js/groups.js"></script>
   <script src="js/proxypool.js?v=proxy-pool-4"></script>
+
 </body>
 </html>

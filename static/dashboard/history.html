@@ -1,332 +1,78 @@
 <!doctype html>
-<html lang="en">
+<!--
+  Historial de chats de WspBox (ruta "/dashboard/history.html"): visor de
+  conversaciones guardadas por instancia.
+  Diseño: BoxUI (contexto "app") + wspbox.css + assets/css/wsp-historial.css.
+  Componentes (modal, dropdown, checkbox): assets/js/wsp-compat.js sobre BoxUI.
+  Sin CDN: todo sale de /assets. Documentación: docs/diseno-ui.md
+-->
+<html lang="en" data-theme="light" data-ui-mode="normal" data-ui-context="app">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WspBox - Chat History</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.css">
-  <link rel="stylesheet" href="css/app.css">
-  <style>
-    .history-container {
-      display: flex;
-      height: 100vh;
-      background: #f8f9fa;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 12px;
-    }
-    
-    .sidebar {
-      width: 280px;
-      background: #fff;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .sidebar-header {
-      padding: 10px 15px;
-      border-bottom: 1px solid #ddd;
-      background: #f1f3f4;
-      color: #333;
-      font-weight: 600;
-      font-size: 12px;
-    }
-    
-    .sidebar-header h3 {
-      margin: 0;
-      font-size: 14px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    
-    .sidebar-header h3:hover {
-      color: #2196f3;
-    }
-    
-    .instance-selector {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      background: #fafafa;
-    }
-    
-    .chat-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-    
-    .chat-item {
-      padding: 6px 10px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background-color 0.1s;
-      font-size: 11px;
-    }
-    
-    .chat-item:hover {
-      background-color: #f0f0f0;
-    }
-    
-    .chat-item.active {
-      background-color: #e3f2fd;
-      border-left: 3px solid #2196f3;
-    }
-    
-    .chat-name {
-      font-weight: 600;
-      font-size: 12px;
-      margin-bottom: 2px;
-    }
-    
-    .chat-jid {
-      font-size: 10px;
-      color: #666;
-      font-family: monospace;
-    }
-    
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-    }
-    
-    .chat-header {
-      padding: 9px 15px;
-      border-bottom: 1px solid #ddd;
-      background: #f1f3f4;
-      font-size: 13px;
-    }
-    
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      background: #fff;
-    }
-    
-    .messages-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-    
-    .message-row {
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
-      transition: background-color 0.1s;
-    }
-    
-    .message-row:hover {
-      background-color: #f8f9fa;
-    }
-    
-    .message-row.me {
-      background-color: #e8f5e8;
-    }
-    
-    .message-row.me:hover {
-      background-color: #d4edda;
-    }
-    
-    .message-row td {
-      padding: 4px 8px;
-      vertical-align: top;
-      border: none;
-    }
-    
-    .message-timestamp {
-      width: 120px;
-      color: #666;
-      font-size: 10px;
-      white-space: nowrap;
-    }
-    
-    .message-sender {
-      width: 150px;
-      font-weight: 500;
-      color: #333;
-    }
-    
-    .message-content {
-      color: #333;
-      word-break: break-word;
-      max-width: 400px;
-    }
-    
-    .message-type {
-      width: 60px;
-      font-size: 9px;
-      color: #888;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      display: inline-block;
-    }
-    
-    .json-expanded {
-      background: #f8f9fa !important;
-    }
-    
-    .json-content {
-      background: #f1f3f4;
-      font-family: 'Courier New', monospace;
-      font-size: 10px;
-      white-space: pre-wrap;
-      padding: 0 5px;
-    }
-    
-    .quoted-message {
-      background: #f0f0f0;
-      border-left: 3px solid #ccc;
-      padding: 4px 8px;
-      margin: 2px 0 4px 0;
-      border-radius: 2px;
-      font-size: 10px;
-    }
-    
-    .quote-header {
-      font-weight: 600;
-      color: #666;
-      margin-bottom: 2px;
-    }
-    
-    .quote-content {
-      color: #888;
-      font-style: italic;
-    }
-    
-    .reply-content {
-      margin-top: 4px;
-    }
-    
-    .deleted-message {
-      background: #fff3e0;
-      border-left: 3px solid #ff9800;
-      padding: 4px 8px;
-      margin: 2px 0;
-      border-radius: 2px;
-      font-size: 11px;
-      color: #bf360c;
-    }
-    
-    .deleted-message s {
-      text-decoration: line-through;
-      color: #666;
-    }
-    
-    .quoted-message i {
-      color: #999;
-      font-size: 9px;
-    }
-    
-    .no-selection {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #666;
-      font-size: 16px;
-    }
-    
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-    }
-    
-    .error-message {
-      padding: 20px;
-      color: #d32f2f;
-      background: #ffebee;
-      border: 1px solid #ffcdd2;
-      border-radius: 4px;
-      margin: 20px;
-    }
-    
-    .media-message {
-      font-style: italic;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .message.other .media-message {
-      color: #666;
-    }
-    
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 250px;
-      }
-      
-      .message-bubble {
-        max-width: 85%;
-      }
-    }
-    
-    .json-view {
-      font-family: 'Courier New', monospace;
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      padding: 15px;
-      margin: 10px 0;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    
-    .json-message {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 10px;
-      margin: 5px 0;
-      font-size: 11px;
-    }
-  </style>
+  <link rel="icon" href="/images/favicon.png">
+  <script>
+  (function () {
+    var d = document.documentElement;
+    try {
+      d.setAttribute('data-theme', localStorage.getItem('box-theme') || 'light');
+      d.setAttribute('data-ui-mode', localStorage.getItem('box-ui-mode') || 'normal');
+    } catch (e) { /* almacenamiento bloqueado */ }
+  })();
+  </script>
+  <link rel="preload" href="/assets/lib/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/vendor.css">
+  <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
+  <link rel="stylesheet" href="/assets/css/wspbox.css">
+  <link rel="stylesheet" href="/assets/css/wsp-dashboard.css">
+  <link rel="stylesheet" href="/assets/css/wsp-historial.css">
 </head>
 <body>
 
 <!-- Login Modal -->
-<div class="ui modal" id="loginModal">
-  <div class="header">
-    <i class="lock icon"></i>
+<dialog id="loginModal">
+    <article>
+      <header><span>
+    <i class="fas fa-lock"></i>
     Authentication Required
-  </div>
-  <div class="content">
-    <div class="ui form">
-      <div class="field">
+  </span><button class="close" type="button" data-box-close aria-label="Cerrar">&times;</button></header>
+      <div class="modal-body">
+    <div class="wsp-form">
+      <div class="box-field">
         <label>Access Token</label>
         <input type="password" id="tokenInput" placeholder="Enter your user token or admin token">
-        <div class="ui info message">
+        <div class="box-alert">
           <p>This page requires authentication. Please enter your user token or admin token to continue.</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="actions">
-    <div class="ui cancel button">Cancel</div>
-    <div class="ui primary button" id="loginBtn">Login</div>
-  </div>
-</div>
+      <footer>
+    <button class="box-btn secondary cancel" type="button">Cancel</button>
+    <button class="box-btn" id="loginBtn" type="button">Login</button>
+  </footer>
+    </article>
+  </dialog>
 
 <div class="history-container" id="historyContainer" style="display: none;">
   <div class="sidebar">
     <div class="sidebar-header">
       <h3 onclick="refreshPage()">
-        <i class="history icon"></i>
+        <i class="fas fa-clock-rotate-left"></i>
         Chat History
       </h3>
     </div>
     
     <div class="instance-selector">
       <label style="display: block; margin-bottom: 8px; font-weight: 600;">Instance:</label>
-      <select class="ui fluid dropdown" id="instanceSelect">
+      <select class="wsp-dropdown" id="instanceSelect">
         <option value="">Select an instance...</option>
       </select>
     </div>
     
     <div class="chat-list" id="chatList">
-      <div class="ui message">
+      <div class="box-alert">
         <p>Select an instance to view chats</p>
       </div>
     </div>
@@ -336,13 +82,13 @@
     <div class="chat-header" id="chatHeader" style="display: none;">
       <div>
         <strong id="chatTitle"></strong>
-        <span style="color: #666; margin-left: 10px;" id="chatJidDisplay"></span>
-        <span style="color: #888; margin-left: 10px;" id="messageCount"></span>
+        <span style="color: var(--box-text-subtle); margin-left: 10px;" id="chatJidDisplay"></span>
+        <span style="color: var(--box-text-subtle); margin-left: 10px;" id="messageCount"></span>
       </div>
     </div>
     
     <div class="chat-messages" id="chatMessages">
-      <div class="no-selection" style="padding: 40px; text-align: center; color: #666; font-size: 14px;">
+      <div class="no-selection" style="padding: 40px; text-align: center; color: var(--box-text-subtle); font-size: 14px;">
         <div style="margin-bottom: 10px; font-weight: 600;">Chat History Viewer</div>
         <p style="margin: 0;">Select a chat on the left to see the entries and json for them.</p>
       </div>
@@ -350,8 +96,10 @@
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.js"></script>
+<script src="/assets/lib/jquery/jquery.min.js"></script>
+<script src="/assets/js/box-ui.js"></script>
+<script src="/assets/js/wsp-dialog.js"></script>
+<script src="/assets/js/wsp-compat.js"></script>
 
 <script>
 let currentToken = '';
@@ -365,8 +113,8 @@ let groupsInfo = {};
 
 $(document).ready(function() {
   // Initialize dropdown and checkbox
-  $('.ui.dropdown').dropdown();
-  $('.ui.checkbox').checkbox();
+  $('.wsp-dropdown').dropdown();
+  $('.wsp-checkbox').checkbox();
   
   // Login function
   function performLogin() {
@@ -411,7 +159,7 @@ $(document).ready(function() {
       currentInstance = selectedInstance;
       loadChatsForInstance(selectedInstance);
     } else {
-      $('#chatList').html('<div class="ui message"><p>No chats found for this instance</p></div>');
+      $('#chatList').html('<div class="box-alert"><p>No chats found for this instance</p></div>');
       clearChatView();
     }
   });
@@ -432,7 +180,7 @@ function refreshPage() {
   
   // Reset UI
   $('#instanceSelect').dropdown('clear');
-  $('#chatList').html('<div class="ui message"><p>Select an instance to view chats</p></div>');
+  $('#chatList').html('<div class="box-alert"><p>Select an instance to view chats</p></div>');
   clearChatView();
   
   // Reload all data
@@ -597,7 +345,7 @@ function loadChatsForInstance(instance) {
   const chats = instanceChatMap[instance] || [];
   
   if (chats.length === 0) {
-    $('#chatList').html('<div class="ui message"><p>No chats found for this instance</p></div>');
+    $('#chatList').html('<div class="box-alert"><p>No chats found for this instance</p></div>');
     return;
   }
   
@@ -649,12 +397,12 @@ function renderChatList(instance, chats) {
     const chatItem = $(`
       <div class="chat-item" data-chat-jid="${chatJid}">
         <div class="chat-name">
-          <i class="${isGroup ? 'users' : 'user'} icon"></i>
+          <i class="fas ${isGroup ? 'fa-users' : 'fa-user'}"></i>
           ${displayName}
         </div>
-        <div class="chat-jid" style="font-size: 11px; color: #888; margin-top: 2px;">${chatJid}</div>
-        ${timeStr ? `<div class="chat-timestamp" style="font-size: 11px; color: #999; margin-top: 4px;">
-          <i class="clock icon"></i>${timeStr}
+        <div class="chat-jid" style="font-size: 11px; color: var(--box-text-subtle); margin-top: 2px;">${chatJid}</div>
+        ${timeStr ? `<div class="chat-timestamp" style="font-size: 11px; color: var(--box-text-subtle); margin-top: 4px;">
+          <i class="fas fa-clock"></i>${timeStr}
         </div>` : ''}
       </div>
     `);
@@ -676,10 +424,10 @@ function loadChatMessages(instance, chatJid, displayName) {
   const properDisplayName = getDisplayName(chatJid);
   const isGroup = chatJid.includes('@g.us');
   
-  let headerInfo = `<i class="${isGroup ? 'users' : 'user'} icon"></i>${properDisplayName}`;
+  let headerInfo = `<i class="fas ${isGroup ? 'fa-users' : 'fa-user'}"></i>${properDisplayName}`;
   if (isGroup && groupsInfo[chatJid]) {
     const participantCount = groupsInfo[chatJid].Participants ? groupsInfo[chatJid].Participants.length : 0;
-    headerInfo += ` <span style="font-size: 12px; color: #666;">(${participantCount} participants)</span>`;
+    headerInfo += ` <span style="font-size: 12px; color: var(--box-text-subtle);">(${participantCount} participants)</span>`;
   }
   
   $('#chatTitle').html(headerInfo);
@@ -687,7 +435,7 @@ function loadChatMessages(instance, chatJid, displayName) {
   $('#chatHeader').show();
   
   // Show loading
-  $('#chatMessages').html('<div class="loading"><div class="ui active loader"></div></div>');
+  $('#chatMessages').html('<div class="loading"><div class=""></div></div>');
   
   $.ajax({
     url: `/chat/history?chat_jid=${encodeURIComponent(chatJid)}&limit=100`,
@@ -715,7 +463,7 @@ function renderMessages(messages) {
   container.empty();
   
   if (messages.length === 0) {
-    container.html('<div style="padding: 20px; text-align: center; color: #666;">No messages found in this chat</div>');
+    container.html('<div style="padding: 20px; text-align: center; color: var(--box-text-subtle);">No messages found in this chat</div>');
     return;
   }
   
@@ -789,7 +537,7 @@ function processMessageContent(message, messageMap) {
         deletedContent = deletedContent.substring(0, 100) + '...';
       }
       
-      return `<div class="deleted-message"><s title="This message was deleted">${deletedContent}</s> <span style="color: #888; font-size: 10px;">(deleted)</span></div>`;
+      return `<div class="deleted-message"><s title="This message was deleted">${deletedContent}</s> <span style="color: var(--box-text-subtle); font-size: 10px;">(deleted)</span></div>`;
     } else {
       return `<div class="deleted-message"><i>Message deleted (original not in history)</i></div>`;
     }
@@ -866,12 +614,12 @@ function toggleMessageJson(row, message) {
 
 function clearChatView() {
   $('#chatHeader').hide();
-  $('#chatMessages').html('<div style="padding: 40px; text-align: center; color: #666; font-size: 14px;"><div style="margin-bottom: 10px; font-weight: 600;">Chat History Viewer</div><p style="margin: 0;">Select a chat on the left to see the entries and json for them.</p></div>');
+  $('#chatMessages').html('<div style="padding: 40px; text-align: center; color: var(--box-text-subtle); font-size: 14px;"><div style="margin-bottom: 10px; font-weight: 600;">Chat History Viewer</div><p style="margin: 0;">Select a chat on the left to see the entries and json for them.</p></div>');
   currentChatJid = '';
 }
 
 function showLoading() {
-  $('#chatMessages').html('<div class="loading"><div class="ui active loader"></div><p style="text-align: center; margin-top: 20px;">Loading chat history, contacts, and groups...</p></div>');
+  $('#chatMessages').html('<div class="loading"><div class=""></div><p style="text-align: center; margin-top: 20px;">Loading chat history, contacts, and groups...</p></div>');
 }
 
 // Helper function to check if a message is from the current user

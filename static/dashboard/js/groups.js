@@ -155,7 +155,7 @@ function initializeGroupsModals() {
             
             // Show success state
             statusDiv.removeClass('info').addClass('success');
-            statusText.html('<i class="check icon"></i> Contacts loaded successfully! You can now select participants.');
+            statusText.html('<i class="fas fa-check"></i> Contacts loaded successfully! You can now select participants.');
             
             // Hide status after 3 seconds
             setTimeout(() => {
@@ -165,7 +165,7 @@ function initializeGroupsModals() {
         } catch (error) {
             console.error('Error loading contacts:', error);
             statusDiv.removeClass('info').addClass('error');
-            statusText.html('<i class="exclamation triangle icon"></i> Failed to load contacts. Please try again.');
+            statusText.html('<i class="fas fa-triangle-exclamation"></i> Failed to load contacts. Please try again.');
         } finally {
             button.removeClass('loading').prop('disabled', false);
         }
@@ -186,7 +186,7 @@ function initializeGroupsModals() {
             populateAddParticipantsDropdown();
             
             statusDiv.removeClass('info').addClass('success');
-            statusText.html('<i class="check icon"></i> Contacts loaded successfully!');
+            statusText.html('<i class="fas fa-check"></i> Contacts loaded successfully!');
             
             setTimeout(() => {
                 statusDiv.fadeOut();
@@ -195,7 +195,7 @@ function initializeGroupsModals() {
         } catch (error) {
             console.error('Error loading contacts:', error);
             statusDiv.removeClass('info').addClass('error');
-            statusText.html('<i class="exclamation triangle icon"></i> Failed to load contacts. Please try again.');
+            statusText.html('<i class="fas fa-triangle-exclamation"></i> Failed to load contacts. Please try again.');
         } finally {
             button.removeClass('loading').prop('disabled', false);
         }
@@ -390,25 +390,25 @@ function createGroupListItem(group) {
     // User role badge
     let userRoleBadge = '';
     if (isSuperAdmin) {
-        userRoleBadge = '<span class="ui mini red label"><i class="shield icon"></i>Super Admin</span>';
+        userRoleBadge = '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>';
     } else if (isAdmin) {
-        userRoleBadge = '<span class="ui mini orange label"><i class="star icon"></i>Admin</span>';
+        userRoleBadge = '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>';
     }
     
     // Build features badges
     let featureBadges = '';
     if (group.IsAnnounce) {
-        featureBadges += '<span class="ui mini grey label"><i class="announcement icon"></i>Admins only</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-bullhorn"></i>Admins only</span>';
     }
     if (group.IsLocked) {
-        featureBadges += '<span class="ui mini grey label"><i class="lock icon"></i>Locked</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-lock"></i>Locked</span>';
     }
     if (group.IsEphemeral && group.DisappearingTimer) {
         const timerText = formatDisappearingTimer(group.DisappearingTimer);
-        featureBadges += `<span class="ui mini grey label"><i class="clock icon"></i>Disappears in ${timerText}</span>`;
+        featureBadges += `<span class="box-badge"><i class="fas fa-clock"></i>Disappears in ${timerText}</span>`;
     }
     if (group.IsJoinApprovalRequired) {
-        featureBadges += '<span class="ui mini grey label"><i class="checkmark icon"></i>Approval required</span>';
+        featureBadges += '<span class="box-badge"><i class="fas fa-check"></i>Approval required</span>';
     }
     
     // Show linked parent for community groups
@@ -416,20 +416,20 @@ function createGroupListItem(group) {
     if (typeInfo.label === 'Community Group' && group.LinkedParentJID) {
         const parentGroup = groupsCache.Groups ? groupsCache.Groups.find(g => g.JID === group.LinkedParentJID) : null;
         const parentName = parentGroup ? parentGroup.Name : 'Unknown Community';
-        parentInfo = `<div class="meta"><i class="sitemap icon"></i>Part of: ${escapeHtml(parentName)}</div>`;
+        parentInfo = `<div class="meta"><i class="fas fa-sitemap"></i>Part of: ${escapeHtml(parentName)}</div>`;
     }
     
     return `
         <div class="item group-list-item" data-group-id="${group.JID}" data-is-admin="${isAdmin}" data-is-super-admin="${isSuperAdmin}" data-group-type="${typeInfo.label}">
-            <div class="ui grid">
-                <div class="one wide column center aligned">
-                    <i class="${typeInfo.icon} large ${typeInfo.color} icon"></i>
+            <div class="wsp-grid">
+                <div class="wsp-col-1">
+                    <i class="fas fa-${typeInfo.icon} wsp-tipo-${typeInfo.color}"></i>
                 </div>
-                <div class="eleven wide column">
+                <div class="wsp-col-11">
                     <div class="content">
                         <div class="header">
                             ${escapeHtml(group.Name || 'Unnamed group')}
-                            <span class="ui mini ${typeInfo.color} basic label">${typeInfo.label}</span>
+                            <span class="box-badge ${typeInfo.color === 'green' ? 'box-badge-success' : 'box-badge-primary'}">${typeInfo.label}</span>
                             ${userRoleBadge}
                         </div>
                         ${parentInfo}
@@ -438,34 +438,34 @@ function createGroupListItem(group) {
                             ${topic.length > 100 ? ' <a href="#" class="read-more-link" onclick="toggleDescription(this)">Read more</a>' : ''}
                         </div>
                         <div class="meta">
-                            <span><i class="users icon"></i>${participantCount} participants</span>
-                            ${admins.length > 0 ? `<span><i class="star icon"></i>${admins.length} admins</span>` : ''}
-                            ${superAdmins.length > 0 ? `<span><i class="shield icon"></i>${superAdmins.length} super admins</span>` : ''}
-                            <span><i class="calendar icon"></i>Created ${createdDate}</span>
+                            <span><i class="fas fa-users"></i>${participantCount} participants</span>
+                            ${admins.length > 0 ? `<span><i class="fas fa-star"></i>${admins.length} admins</span>` : ''}
+                            ${superAdmins.length > 0 ? `<span><i class="fas fa-shield"></i>${superAdmins.length} super admins</span>` : ''}
+                            <span><i class="fas fa-calendar"></i>Created ${createdDate}</span>
                         </div>
                         <div class="meta">
-                            <span><i class="hashtag icon"></i><code>${group.JID}</code></span>
-                            <a href="#" onclick="copyGroupId(event, '${group.JID}')"><i class="copy icon"></i>Copy ID</a>
+                            <span><i class="fas fa-hashtag"></i><code>${group.JID}</code></span>
+                            <a href="#" onclick="copyGroupId(event, '${group.JID}')"><i class="fas fa-copy"></i>Copy ID</a>
                         </div>
                         <div class="meta">
                             ${featureBadges}
                         </div>
                     </div>
                 </div>
-                <div class="four wide column right aligned">
-                    <div class="ui small buttons">
-                        <button class="ui primary button" onclick="viewGroupDetails('${group.JID}')">
-                            <i class="eye icon"></i> View
+                <div class="wsp-col-4">
+                    <div class="">
+                        <button class="box-btn" onclick="viewGroupDetails('${group.JID}')">
+                            <i class="fas fa-eye"></i> View
                         </button>
                         ${(isAdmin || isSuperAdmin) ? 
-                            `<button class="ui secondary button" onclick="manageGroup('${group.JID}')">
-                                <i class="settings icon"></i> Manage
+                            `<button class="box-btn secondary" onclick="manageGroup('${group.JID}')">
+                                <i class="fas fa-gear"></i> Manage
                             </button>` : ''
                         }
                     </div>
                 </div>
             </div>
-            <div class="ui divider"></div>
+            <div class="box-divider"></div>
         </div>
     `;
 }
@@ -594,8 +594,8 @@ function populateGroupDetailsModal(groupData) {
                 
                 // Remove button - available for admins
                 buttons.push(`
-                    <button class="ui mini red button" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
-                        <i class="minus icon"></i> Remove
+                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
+                        <i class="fas fa-minus"></i> Remove
                     </button>
                 `);
                 
@@ -605,30 +605,30 @@ function populateGroupDetailsModal(groupData) {
                     if (!participantIsAdmin && !participantIsSuperAdmin) {
                         // Promote to admin
                         buttons.push(`
-                            <button class="ui mini orange button" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
-                                <i class="star icon"></i> Promote
+                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                                <i class="fas fa-star"></i> Promote
                             </button>
                         `);
                     } else if (participantIsAdmin && !participantIsSuperAdmin) {
                         // Demote from admin
                         buttons.push(`
-                            <button class="ui mini grey button" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
-                                <i class="star outline icon"></i> Demote
+                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
+                                <i class="far fa-star"></i> Demote
                             </button>
                         `);
                     }
                 } else if (isAdmin && !participantIsAdmin && !participantIsSuperAdmin) {
                     // Regular admins can only promote regular users to admin
                     buttons.push(`
-                        <button class="ui mini orange button" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
-                            <i class="star icon"></i> Promote
+                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                            <i class="fas fa-star"></i> Promote
                         </button>
                     `);
                 }
                 
                 if (buttons.length > 0) {
                     actionButtons = `
-                        <div class="ui mini buttons">
+                        <div class="">
                             ${buttons.join('')}
                         </div>
                     `;
@@ -644,9 +644,9 @@ function populateGroupDetailsModal(groupData) {
                         </div>
                         <div class="participant-actions">
                             <div class="participant-labels">
-                                ${participantIsSuperAdmin ? '<span class="ui mini red label"><i class="shield icon"></i>Super Admin</span>' : 
-                                  participantIsAdmin ? '<span class="ui mini orange label"><i class="star icon"></i>Admin</span>' : ''}
-                                ${isCurrentUser ? '<span class="ui mini blue label">You</span>' : ''}
+                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
+                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                                ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                             </div>
                             ${actionButtons}
                         </div>
@@ -680,9 +680,9 @@ function createParticipantItem(participant) {
                 </div>
                 <div class="participant-actions">
                     <div class="participant-labels">
-                        ${isSuperAdmin ? '<span class="ui mini red label"><i class="shield icon"></i>Super Admin</span>' : 
-                          isAdmin ? '<span class="ui mini orange label"><i class="star icon"></i>Admin</span>' : ''}
-                        ${isCurrentUser ? '<span class="ui mini blue label">You</span>' : ''}
+                        ${isSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
+                          isAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                        ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                     </div>
                 </div>
             </div>
@@ -748,7 +748,7 @@ function showCreateGroupModal() {
     
     // Show initial status message
     statusDiv.show().removeClass('success error').addClass('info');
-    statusText.html('<i class="info circle icon"></i> Click "Load Contacts" to populate the participants list.');
+    statusText.html('<i class="fas fa-circle-info"></i> Click "Load Contacts" to populate the participants list.');
     
     $('#modalCreateGroup').modal('show');
 }
@@ -873,13 +873,13 @@ function displayGroupPreview(groupData) {
     const previewContent = $('#groupPreviewContent');
     
     previewContent.html(`
-        <div class="ui grid">
-            <div class="four wide column">
-                <div class="ui icon header">
-                    <i class="users icon"></i>
+        <div class="wsp-grid">
+            <div class="wsp-col-4">
+                <div class="wsp-titulo">
+                    <i class="fas fa-users"></i>
                 </div>
             </div>
-            <div class="twelve wide column">
+            <div class="wsp-col-12">
                 <h4>${escapeHtml(groupData.Name || 'Unnamed Group')}</h4>
                 <p>${escapeHtml(groupData.Topic || 'No description')}</p>
                 <p><strong>Participants:</strong> ${groupData.Size || 0}</p>
@@ -1259,8 +1259,8 @@ function populateCurrentParticipantsList() {
                 
                 // Remove button - available for admins
                 buttons.push(`
-                    <button class="ui mini red button" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
-                        <i class="minus icon"></i> Remove
+                    <button class="box-btn box-btn-danger box-btn-sm" onclick="removeParticipant('${participant.JID}')" title="Remove from group">
+                        <i class="fas fa-minus"></i> Remove
                     </button>
                 `);
                 
@@ -1270,30 +1270,30 @@ function populateCurrentParticipantsList() {
                     if (!participantIsAdmin && !participantIsSuperAdmin) {
                         // Promote to admin
                         buttons.push(`
-                            <button class="ui mini orange button" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
-                                <i class="star icon"></i> Promote
+                            <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                                <i class="fas fa-star"></i> Promote
                             </button>
                         `);
                     } else if (participantIsAdmin && !participantIsSuperAdmin) {
                         // Demote from admin
                         buttons.push(`
-                            <button class="ui mini grey button" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
-                                <i class="star outline icon"></i> Demote
+                            <button class="box-btn secondary box-btn-sm" onclick="demoteParticipant('${participant.JID}')" title="Demote from admin">
+                                <i class="far fa-star"></i> Demote
                             </button>
                         `);
                     }
                 } else if (currentUserIsAdmin && !participantIsAdmin && !participantIsSuperAdmin) {
                     // Regular admins can only promote regular users to admin
                     buttons.push(`
-                        <button class="ui mini orange button" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
-                            <i class="star icon"></i> Promote
+                        <button class="box-btn box-btn-sm" onclick="promoteParticipant('${participant.JID}')" title="Promote to admin">
+                            <i class="fas fa-star"></i> Promote
                         </button>
                     `);
                 }
                 
                 if (buttons.length > 0) {
                     actionButtons = `
-                        <div class="ui mini buttons">
+                        <div class="">
                             ${buttons.join('')}
                         </div>
                     `;
@@ -1309,9 +1309,9 @@ function populateCurrentParticipantsList() {
                         </div>
                         <div class="participant-actions">
                             <div class="participant-labels">
-                                ${participantIsSuperAdmin ? '<span class="ui mini red label"><i class="shield icon"></i>Super Admin</span>' : 
-                                  participantIsAdmin ? '<span class="ui mini orange label"><i class="star icon"></i>Admin</span>' : ''}
-                                ${isCurrentUser ? '<span class="ui mini blue label">You</span>' : ''}
+                                ${participantIsSuperAdmin ? '<span class="box-badge box-badge-danger"><i class="fas fa-shield"></i>Super Admin</span>' : 
+                                  participantIsAdmin ? '<span class="box-badge box-badge-warning"><i class="fas fa-star"></i>Admin</span>' : ''}
+                                ${isCurrentUser ? '<span class="box-badge box-badge-primary">You</span>' : ''}
                             </div>
                             ${actionButtons}
                         </div>
@@ -1667,7 +1667,7 @@ async function uploadGroupPhoto(file) {
         uploadButton = document.querySelector('#changeGroupPhotoBtn');
         if (uploadButton) {
             uploadButton.disabled = true;
-            uploadButton.innerHTML = '<i class="spinner loading icon"></i> Processing...';
+            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
         }
         
         console.log('Starting group photo upload process...');
@@ -1697,7 +1697,7 @@ async function uploadGroupPhoto(file) {
         
         // Update button text
         if (uploadButton) {
-            uploadButton.innerHTML = '<i class="spinner loading icon"></i> Uploading...';
+            uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
         }
         
         const response = await updateGroupPhoto(currentGroupId, processedImage.base64);
@@ -1747,7 +1747,7 @@ async function uploadGroupPhoto(file) {
         // Reset button state
         if (uploadButton) {
             uploadButton.disabled = false;
-            uploadButton.innerHTML = '<i class="upload icon"></i> Change Photo';
+            uploadButton.innerHTML = '<i class="fas fa-upload"></i> Change Photo';
         }
     }
 }

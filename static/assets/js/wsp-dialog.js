@@ -46,14 +46,17 @@
                 return;
             }
 
-            var aprobar = e.target.closest('[data-wsp-aprobar]');
+            /* Botones del pie: se aceptan los atributos propios y también
+               las clases de Fomantic (positive/approve/ok y
+               negative/deny/cancel) para no tocar el HTML heredado. */
+            var aprobar = e.target.closest('[data-wsp-aprobar], footer .positive, footer .approve, footer .ok');
             if (aprobar && dlg.contains(aprobar)) {
                 var res = o.alAprobar ? o.alAprobar() : undefined;
                 if (res !== false) dlg.close();
                 return;
             }
 
-            var denegar = e.target.closest('[data-wsp-denegar]');
+            var denegar = e.target.closest('[data-wsp-denegar], footer .negative, footer .deny, footer .cancel');
             if (denegar && dlg.contains(denegar)) {
                 if (o.alDenegar) o.alDenegar();
                 dlg.close();

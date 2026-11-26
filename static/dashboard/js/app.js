@@ -125,13 +125,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Change button appearance to show admin mode
     adminLoginBtn.classList.add('teal');
-    adminLoginBtn.innerHTML = '<i class="shield alternate icon"></i> Admin Mode';
+    adminLoginBtn.innerHTML = '<i class="fas fa-shield-halved"></i> Admin Mode';
     $('#loginToken').val('').focus();
     
     // Show admin-specific instructions
-    $('.ui.info.message').html(`
+    $('.logingrid .box-alert').html(`
         <div class="header mb-4">
-            <i class="user shield icon"></i>
+            <i class="fas fa-user-shield"></i>
             Admin Login
         </div>
         <p>Please enter your admin credentials:</p>
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       $('#addInstanceModal').modal('hide');
       $('#addInstanceForm').form('reset');
-      $('.ui.dropdown').dropdown('restore defaults');
+      $('.wsp-dropdown').dropdown('restore defaults');
       // Reset toggles
       $('#addInstanceProxyToggle').checkbox('set unchecked');
       $('#addInstanceS3Toggle').checkbox('set unchecked');
@@ -836,7 +836,7 @@ function openDashboard(id,token) {
   showWidgets();
   $('.admingrid').addClass('hidden');
   $('.maingrid').removeClass('hidden');
-  $('.card.no-hover').addClass('hidden');
+  $('.no-hover').addClass('hidden');
   $(`#instance-card-${id}`).removeClass('hidden');
   $('.adminlogin').show();
 }
@@ -1450,15 +1450,15 @@ function populateInstances(instances) {
       <tr>
         <td>${instance.id}</td>
         <td>${instance.name}</td>
-        <td><i class="${instance.connected ? 'check green' : 'times red'} icon"></i> <span class="status ${instance.connected}">${instance.connected ? 'Yes' : 'No'}</span></td>
-        <td><i class="${instance.loggedIn ? 'check green' : 'times red'} icon"></i> <span class="status ${instance.loggedIn}">${instance.loggedIn ? 'Yes' : 'No'}</span></td>
+        <td><i class="fas ${instance.connected ? 'fa-check wsp-ok' : 'fa-xmark wsp-no'}"></i> <span class="status ${instance.connected}">${instance.connected ? 'Yes' : 'No'}</span></td>
+        <td><i class="fas ${instance.loggedIn ? 'fa-check wsp-ok' : 'fa-xmark wsp-no'}"></i> <span class="status ${instance.loggedIn}">${instance.loggedIn ? 'Yes' : 'No'}</span></td>
         <td>${instanceProxyLabel(instance)}</td>
         <td>
-          <button class="ui primary button dashboard-button" onclick="openDashboard('${instance.id}', '${instance.token}')">
-            <i class="external alternate icon"></i> Open
+          <button class="box-btn dashboard-button" onclick="openDashboard('${instance.id}', '${instance.token}')">
+            <i class="fas fa-arrow-up-right-from-square"></i> Open
           </button>
-          <button class="ui negative button dashboard-button" onclick="deleteInstance('${instance.id}')">
-            <i class="trash alternate icon"></i> Delete
+          <button class="box-btn box-btn-danger negative dashboard-button" onclick="deleteInstance('${instance.id}')">
+            <i class="fas fa-trash-can"></i> Delete
           </button>
         </td>
       </tr>
@@ -1466,20 +1466,20 @@ function populateInstances(instances) {
   tableBody.append(row);
 
   const card = `
-      <div class="ui fluid card hidden no-hover" id="instance-card-${instance.id}">
+      <div class="wsp-instancia hidden no-hover" id="instance-card-${instance.id}">
           <div class="content">
-              <div class="ui ${instance.loggedIn ? 'one' : 'two'} column stackable grid">
+              <div class="wsp-grid wsp-apilable">
                   <!-- Left Column - Instance Info -->
-                  <div class="column">
+                  <div class="wsp-col">
                       <div class="header" style="font-size: 1.3em; margin-bottom: 0.5rem;">
                           ${instance.name}
-                          <div class="ui labels" style="margin-top: 0.5em;">
-                              <div class="ui ${instance.connected ? 'green' : 'red'} horizontal label">
-                                  <i class="${instance.connected ? 'check' : 'times'} icon"></i>
+                          <div class="wsp-etiquetas" style="margin-top: 0.5em;">
+                              <div class="box-badge ${instance.connected ? 'box-badge-success' : 'box-badge-danger'}">
+                                  <i class="fas ${instance.connected ? 'fa-check' : 'fa-xmark'}"></i>
                                   ${instance.connected ? 'Connected' : 'Disconnected'}
                               </div>
-                              <div class="ui ${instance.loggedIn ? 'green' : 'red'} horizontal label">
-                                  <i class="${instance.loggedIn ? 'check' : 'times'} icon"></i>
+                              <div class="box-badge ${instance.loggedIn ? 'box-badge-success' : 'box-badge-danger'}">
+                                  <i class="fas ${instance.loggedIn ? 'fa-check' : 'fa-xmark'}"></i>
                                   ${instance.loggedIn ? 'Logged In' : 'Logged Out'}
                               </div>
                           </div>
@@ -1487,7 +1487,7 @@ function populateInstances(instances) {
                       
                       <div class="meta" style="margin-bottom: 1rem;">Instance ID: ${instance.id}</div>
                       
-                      <div class="ui list">
+                      <div class="wsp-lista">
                           <div class="item">
                               <div class="header">Token</div>
                               <div class="content" style="word-break: break-all;">${instance.token}</div>
@@ -1525,7 +1525,7 @@ function populateInstances(instances) {
                               <div class="header">Proxy Pool</div>
                               <div class="content">
                                   ${instanceProxyLabel(instance)}
-                                  ${getLocalStorageItem('isAdmin') && !instance.connected ? `<button class="ui mini orange button" onclick="releaseProxyPool('${instance.id}')" title="Free this pool slot; a pool proxy is assigned again on the next connect">Release</button>` : ''}
+                                  ${getLocalStorageItem('isAdmin') && !instance.connected ? `<button class="box-btn box-btn-sm" onclick="releaseProxyPool('${instance.id}')" title="Free this pool slot; a pool proxy is assigned again on the next connect">Release</button>` : ''}
                               </div>
                           </div>` : ''}
                           <div class="item">
@@ -1545,30 +1545,30 @@ function populateInstances(instances) {
                   
                   <!-- Right Column - QR Code / Passkey (only shown if not logged in) -->
                   ${!instance.loggedIn ? `
-                  <div class="column" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                  <div class="wsp-col" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
                       ${instance.passkeyPending && instance.publicKey ? `
                       <!-- Passkey Mode -->
-                      <div class="ui segment" style="width: 100%; max-width: 300px; text-align: center;">
-                        <i class="key icon" style="font-size: 3em; color: #f2711c;"></i>
-                        <h4 class="ui header">Passkey Required</h4>
+                      <div class="wsp-seccion" style="width: 100%; max-width: 300px; text-align: center;">
+                        <i class="key" style="font-size: 3em; color: #f2711c;"></i>
+                        <h4 class="wsp-titulo">Passkey Required</h4>
                         <p style="font-size: 12px; color: #666;">
                           WhatsApp requested passkey verification.
                         </p>
-                        <button class="ui orange button passkey-setup-btn" data-passkey-index="${idx}">
-                          <i class="key icon"></i> Setup Passkey
+                        <button class="box-btn passkey-setup-btn" data-passkey-index="${idx}">
+                          <i class="fas fa-key"></i> Setup Passkey
                         </button>
                       </div>
                       ` : `
                       <!-- QR Code Mode -->
-                      <div class="ui segment" style="width: 100%; max-width: 200px; height: 200px; display: flex; justify-content: center; align-items: center;">
+                      <div class="wsp-seccion" style="width: 100%; max-width: 200px; height: 200px; display: flex; justify-content: center; align-items: center;">
                         ${instance.qrcode ? 
                           `<img src="${instance.qrcode}" style="max-height: 100%; max-width: 100%;">
                       </div>
                       <div>
-                        Open WhatsApp on your phone and tap<br/><i class="ellipsis vertical icon"></i>> Linked devices > Link a device.
+                        Open WhatsApp on your phone and tap<br/><i class="fas fa-ellipsis-vertical"></i>> Linked devices > Link a device.
                           ` : 
-                                `<div class="ui icon header" style="text-align: center;">
-                                    <i class="qrcode icon" style="font-size: 3em;"></i>
+                                `<div class="wsp-titulo" style="text-align: center;">
+                                    <i class="qrcode" style="font-size: 3em;"></i>
                                     <div class="sub header">QR Code will appear here</div>
                                 </div>`
                            }
@@ -1582,9 +1582,9 @@ function populateInstances(instances) {
             </div>
             
             <div class="extra content">
-              <button class="ui primary positive button dashboard-button ${instance.connected === true ? 'hidden' : ''}" id="button-connect-${instance.id}" onclick="connect('${instance.token}')">Connect</button>
-              <button class="ui primary negative button dashboard-button ${instance.connected === true ? '' : 'hidden'}" id="button-logout-${instance.id}" onclick="logout('${instance.token}')">Logout</button>
-              <button class="ui primary positive button dashboard-button ${instance.connected === true && instance.loggedIn === false ? '' : 'hidden'}" id="button-pair-${instance.id}" onclick="modalPairPhone()">Login with Pairing Code</button>
+              <button class="box-btn positive dashboard-button ${instance.connected === true ? 'hidden' : ''}" id="button-connect-${instance.id}" onclick="connect('${instance.token}')">Connect</button>
+              <button class="box-btn box-btn-danger negative dashboard-button ${instance.connected === true ? '' : 'hidden'}" id="button-logout-${instance.id}" onclick="logout('${instance.token}')">Logout</button>
+              <button class="box-btn positive dashboard-button ${instance.connected === true && instance.loggedIn === false ? '' : 'hidden'}" id="button-pair-${instance.id}" onclick="modalPairPhone()">Login with Pairing Code</button>
               </div>
         </div>
         `;
@@ -1677,8 +1677,8 @@ function showAdminUser() {
   
   indicator.className = 'item admin';
   indicator.innerHTML = `
-    <i class="user shield icon"></i>
-    <div class="ui mini label">ADMIN</div>
+    <i class="fas fa-user-shield"></i>
+    <div class="box-badge">ADMIN</div>
   `;
 }
   
@@ -1688,8 +1688,8 @@ function showRegularUser() {
   
   indicator.className = 'item user';
   indicator.innerHTML = `
-    <i class="user icon"></i>
-    <div class="ui mini label">USER</div>
+    <i class="fas fa-user"></i>
+    <div class="box-badge">USER</div>
   `;
 }
 

@@ -1,0 +1,284 @@
+/* ============================================================
+   wsp-historial.css · estilos de la página de historial de chats
+   ------------------------------------------------------------
+   Qué hace: maqueta el visor de conversaciones (/dashboard/history.html):
+     lista de chats a la izquierda y mensajes a la derecha.
+   Depende de: BoxUI + wspbox.css cargados antes. Solo tokens de BoxUI.
+   Documentación: docs/diseno-ui.md
+   ============================================================ */
+    .history-container {
+  display: flex;
+  height: 100vh;
+  background: var(--box-canvas);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--box-surface);
+  border-right: 1px solid var(--box-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--box-border);
+  background: var(--box-surface-sunken);
+  color: var(--box-text);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.sidebar-header h3:hover {
+  color: var(--box-brand-500);
+}
+
+.instance-selector {
+  padding: 10px;
+  border-bottom: 1px solid var(--box-border);
+  background: var(--box-surface-sunken);
+}
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-item {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--box-surface-sunken);
+  cursor: pointer;
+  transition: background-color 0.1s;
+  font-size: 11px;
+}
+
+.chat-item:hover {
+  background-color: var(--box-surface-sunken);
+}
+
+.chat-item.active {
+  background-color: var(--box-info-bg);
+  border-left: 3px solid var(--box-brand-500);
+}
+
+.chat-name {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.chat-jid {
+  font-size: 10px;
+  color: var(--box-text-subtle);
+  font-family: monospace;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--box-surface);
+}
+
+.chat-header {
+  padding: 9px 15px;
+  border-bottom: 1px solid var(--box-border);
+  background: var(--box-surface-sunken);
+  font-size: 13px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--box-surface);
+}
+
+.messages-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.message-row {
+  border-bottom: 1px solid var(--box-border);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.message-row:hover {
+  background-color: var(--box-canvas);
+}
+
+.message-row.me {
+  background-color: var(--box-success-bg);
+}
+
+.message-row.me:hover {
+  background-color: var(--box-success-bg);
+}
+
+.message-row td {
+  padding: 4px 8px;
+  vertical-align: top;
+  border: none;
+}
+
+.message-timestamp {
+  width: 120px;
+  color: var(--box-text-subtle);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.message-sender {
+  width: 150px;
+  font-weight: 500;
+  color: var(--box-text);
+}
+
+.message-content {
+  color: var(--box-text);
+  word-break: break-word;
+  max-width: 400px;
+}
+
+.message-type {
+  width: 60px;
+  font-size: 9px;
+  color: var(--box-text-subtle);
+  text-transform: uppercase;
+  padding: 2px 6px;
+  display: inline-block;
+}
+
+.json-expanded {
+  background: var(--box-canvas);
+}
+
+.json-content {
+  background: var(--box-surface-sunken);
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  white-space: pre-wrap;
+  padding: 0 5px;
+}
+
+.quoted-message {
+  background: var(--box-surface-sunken);
+  border-left: 3px solid var(--box-border);
+  padding: 4px 8px;
+  margin: 2px 0 4px 0;
+  border-radius: 2px;
+  font-size: 10px;
+}
+
+.quote-header {
+  font-weight: 600;
+  color: var(--box-text-subtle);
+  margin-bottom: 2px;
+}
+
+.quote-content {
+  color: var(--box-text-subtle);
+  font-style: italic;
+}
+
+.reply-content {
+  margin-top: 4px;
+}
+
+.deleted-message {
+  background: var(--box-warning-bg);
+  border-left: 3px solid var(--box-warning-solid);
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--box-warning-fg);
+}
+
+.deleted-message s {
+  text-decoration: line-through;
+  color: var(--box-text-subtle);
+}
+
+.quoted-message i {
+  color: var(--box-text-subtle);
+  font-size: 9px;
+}
+
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--box-text-subtle);
+  font-size: 16px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.error-message {
+  padding: 20px;
+  color: var(--box-danger-solid);
+  background: var(--box-danger-bg);
+  border: 1px solid var(--box-danger-bg);
+  border-radius: 4px;
+  margin: 20px;
+}
+
+.media-message {
+  font-style: italic;
+  color: color-mix(in srgb, var(--box-surface) 90%, transparent);
+}
+
+.message.other .media-message {
+  color: var(--box-text-subtle);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 250px;
+  }
+  
+  .message-bubble {
+    max-width: 85%;
+  }
+}
+
+.json-view {
+  font-family: 'Courier New', monospace;
+  background: var(--box-canvas);
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  padding: 15px;
+  margin: 10px 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.json-message {
+  background: white;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  padding: 10px;
+  margin: 5px 0;
+  font-size: 11px;
+}
+  

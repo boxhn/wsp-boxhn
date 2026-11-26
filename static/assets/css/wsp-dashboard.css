@@ -1,0 +1,207 @@
+/* ============================================================
+   wsp-dashboard.css · estilos propios del panel (/dashboard)
+   ------------------------------------------------------------
+   Qué hace: completa BoxUI con las pocas piezas que el panel
+     necesita y que BoxUI no trae: rejilla de columnas, barra
+     superior fija, tarjeta de instancia, lista de datos,
+     multiselect con búsqueda y estados que el JavaScript alterna
+     por clase (hidden, loading, disabled, show, info/success/error).
+   Expone: clases .wsp-* y las clases de gancho del JS.
+   Depende de: vendor.css, boxui.min.css y wspbox.css cargados antes.
+     Va sin capa (gana a BoxUI).
+   Reglas: solo tokens de BoxUI (sin hex, sin !important).
+   IMPORTANTE: `.hidden` va al final del archivo a propósito: tiene
+     que ganar a cualquier display definido arriba (misma
+     especificidad, gana la última).
+   Documentación: docs/diseno-ui.md
+   ============================================================ */
+
+/* ---------- estructura ---------- */
+.wsp-contenedor {
+    width: 100%;
+    padding-inline: 1.25rem;
+}
+
+.p1 { padding: 1rem 1.25rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.text-muted { color: var(--box-text-subtle); }
+
+.wsp-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.wsp-grid > .wsp-grid { flex: 1 0 100%; margin-bottom: 0; }
+.wsp-col { flex: 1 1 0; min-width: 0; }
+.wsp-col-1  { flex: 0 0 calc(6.25% - 1rem); }
+.wsp-col-2  { flex: 0 0 calc(12.5% - 1rem); }
+.wsp-col-3  { flex: 0 0 calc(18.75% - 1rem); }
+.wsp-col-4  { flex: 0 0 calc(25% - 1rem); }
+.wsp-col-5  { flex: 0 0 calc(31.25% - 1rem); }
+.wsp-col-6  { flex: 0 0 calc(37.5% - 1rem); }
+.wsp-col-7  { flex: 0 0 calc(43.75% - 1rem); }
+.wsp-col-8  { flex: 0 0 calc(50% - 1rem); }
+.wsp-col-9  { flex: 0 0 calc(56.25% - 1rem); }
+.wsp-col-10 { flex: 0 0 calc(62.5% - 1rem); }
+.wsp-col-11 { flex: 0 0 calc(68.75% - 1rem); }
+.wsp-col-12 { flex: 0 0 calc(75% - 1rem); }
+.wsp-col-16 { flex: 0 0 100%; }
+.wsp-fin { margin-inline-start: auto; text-align: end; }
+
+@media (max-width: 768px) {
+    .wsp-grid > [class*="wsp-col"] { flex: 1 0 100%; }
+    .wsp-fin { margin-inline-start: 0; text-align: start; }
+}
+
+/* ---------- barra superior fija ---------- */
+.wsp-barra {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 20;
+    background: var(--box-surface);
+    border-bottom: var(--box-border-width) solid var(--box-border);
+}
+.wsp-barra .wsp-contenedor {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.5rem;
+}
+.wsp-barra .header.item { font-weight: 600; font-size: 1.15rem; color: inherit; text-decoration: none; }
+.wsp-barra .menu { display: flex; align-items: center; gap: 1rem; margin-inline-start: auto; }
+#user-role-indicator.admin { color: var(--box-danger-solid); font-weight: 600; }
+#user-role-indicator.user  { color: var(--box-success-solid); font-weight: 600; }
+
+/* ---------- login ---------- */
+.logingrid { justify-content: center; align-items: center; min-height: 80vh; }
+.logingrid > .wsp-col { flex: 0 1 38rem; }
+.wsp-instancia.login { padding: 1.5rem; }
+.logingrid .center.aligned { text-align: center; }
+.bi-whatsapp { font-size: 2.5rem; color: var(--box-brand-500); }
+
+/* ---------- tarjetas y secciones ---------- */
+.wsp-seccion {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--box-surface);
+    border: var(--box-border-width) solid var(--box-border);
+    border-radius: var(--box-radius);
+}
+
+.wsp-instancia {
+    background: var(--box-surface);
+    border: var(--box-border-width) solid var(--box-border);
+    border-radius: var(--box-radius);
+    margin-bottom: 1rem;
+}
+.wsp-instancia > .content { padding: 1rem 1.25rem; }
+.wsp-instancia > .extra.content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-top: var(--box-border-width) solid var(--box-border);
+}
+
+/* Lista etiqueta/valor de la tarjeta de instancia */
+.wsp-lista .item { padding: 0.4rem 0; border-bottom: var(--box-border-width) solid var(--box-border); }
+.wsp-lista .item:last-child { border-bottom: 0; }
+.wsp-lista .header { font-size: 0.8rem; font-weight: 600; color: var(--box-text-subtle); }
+.wsp-lista .content { word-break: break-word; }
+.wsp-etiquetas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.wsp-titulo { font-weight: 600; }
+.wsp-titulo-alerta { display: block; margin-bottom: 0.25rem; }
+.wsp-sub { display: block; font-size: 0.9rem; font-weight: 400; color: var(--box-text-subtle); }
+.wsp-vacio { text-align: center; padding: 1.5rem; color: var(--box-text-subtle); }
+.wsp-widget-tag { margin-top: 0.5rem; }
+.wsp-avatar { width: 4rem; height: 4rem; border-radius: 50%; object-fit: cover; }
+.wsp-ok { color: var(--box-success-solid); }
+.wsp-no { color: var(--box-danger-solid); }
+.wsp-tipo-purple, .wsp-tipo-blue { color: var(--box-brand-500); }
+.wsp-tipo-green { color: var(--box-success-solid); }
+
+/* ---------- carga y estados ---------- */
+.wsp-cargando { display: none; align-items: center; gap: 0.5rem; padding: 1rem; color: var(--box-text-subtle); }
+.wsp-cargando.active { display: flex; }
+.loading, .disabled { pointer-events: none; opacity: 0.65; }
+
+/* Los mensajes del panel apilan su contenido (título, texto, lista) */
+.box-alert { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+
+/* Mensajes que el JS pinta con info/success/error */
+.box-alert.info    { background: var(--box-info-bg);    color: var(--box-info-fg); }
+.box-alert.success { background: var(--box-success-bg); color: var(--box-success-fg); }
+.box-alert.error   { background: var(--box-danger-bg);  color: var(--box-danger-fg); }
+
+/* Campos de proxy / S3 que se muestran al activar el interruptor */
+#proxyUrlField, #proxyWebhookUseProxyField { display: none; }
+#proxyUrlField.show, #proxyWebhookUseProxyField.show { display: block; }
+#deleteS3Config { display: none; }
+
+/* ---------- formularios ---------- */
+.wsp-checkbox { margin-bottom: 0.25rem; }
+.wsp-ancho { display: flex; width: 100%; }
+.wsp-ancho > button { flex: 1; }
+.wsp-entrada { display: flex; gap: 0.5rem; align-items: center; position: relative; }
+.wsp-entrada > input { flex: 1; }
+
+/* ---------- multiselect con búsqueda y alta libre ---------- */
+.wsp-multiselect {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    background: var(--box-surface);
+    border: var(--box-border-width) solid var(--box-border);
+    border-radius: var(--box-radius);
+    cursor: text;
+}
+.wsp-ms-chips { display: contents; }
+.wsp-ms-quitar { min-height: 0; padding: 0 0.25rem; border: 0; background: none; color: inherit; cursor: pointer; }
+.wsp-ms-input { flex: 1 1 8rem; min-height: 0; padding: 0.25rem; border: 0; background: transparent; box-shadow: none; }
+.wsp-multiselect .default.text { color: var(--box-text-subtle); }
+.wsp-multiselect .menu {
+    display: none;
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    z-index: 30;
+    max-height: 14rem;
+    overflow-y: auto;
+    background: var(--box-surface-raised);
+    border: var(--box-border-width) solid var(--box-border);
+    border-radius: var(--box-radius);
+    box-shadow: var(--box-shadow);
+}
+.wsp-abierto .menu { display: block; }
+.wsp-multiselect .menu .item { padding: 0.5rem 0.75rem; cursor: pointer; }
+.wsp-multiselect .menu .item:hover { background: var(--box-surface-sunken); }
+.wsp-multiselect .menu .item.active { font-weight: 600; }
+.wsp-multiselect .menu .item.disabled { cursor: default; }
+
+/* ---------- grupos ---------- */
+.group-list-item { padding: 1rem 0; border-bottom: var(--box-border-width) solid var(--box-border); }
+.group-list-item .header { font-weight: 600; }
+.group-list-item .meta { color: var(--box-text-subtle); font-size: 0.85rem; }
+.group-photo, .group-preview-photo { width: 3.5rem; height: 3.5rem; border-radius: 50%; object-fit: cover; }
+.group-photo-placeholder { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--box-surface-sunken); }
+.participant-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: var(--box-border-width) solid var(--box-border); }
+#currentGroupPhotoContainer img { max-width: 8rem; border-radius: var(--box-radius); }
+
+/* ---------- tablas ---------- */
+.box-fields-table td, .box-fields-table th { vertical-align: middle; }
+/* Botones de acción de una fila: no se comprimen ni se cortan con puntos suspensivos */
+/* BoxUI recorta las celdas (overflow hidden + puntos suspensivos); la de acciones debe mostrar sus botones, envolviendo si no caben. */
+td:last-child { overflow: visible; text-overflow: clip; white-space: normal; }
+.dashboard-button { margin-inline-end: 0.25rem; max-width: none; }
+
+/* Una alerta vacía no se muestra (Fomantic ocultaba los mensajes sin contenido) */
+.box-alert:empty { display: none; }
+
+/* ---------- ocultar (SIEMPRE al final) ---------- */
+.hidden { display: none; }

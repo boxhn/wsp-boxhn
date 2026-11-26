@@ -10,8 +10,8 @@ llevar a `main` con un merge cuando se decida, sin tocar el backend.
 |---|---|---|
 | Landing | `/` (`static/index.html`) | Rediseñada con BoxUI (contexto `public`) |
 | Login | `/login` (`static/login/index.html`) | Rediseñado con BoxUI (contexto `app`), sin Fomantic ni jQuery |
-| Dashboard | `/dashboard` (`static/dashboard/`) | Pendiente: usa Fomantic UI + jQuery |
-| Docs, API (Swagger), Web Client | `/docs`, `/api`, `/client/` | Fuera del alcance |
+| Dashboard | `/dashboard` y `/dashboard/history.html` | Rediseñado con BoxUI; conserva jQuery (copia local) con un puente de compatibilidad (ver "Dashboard") |
+| Docs, API (Swagger), Web Client | `/docs`, `/api`, `/client/` | Sin rediseño; solo se ocultó el término WuzAPI de sus textos |
 
 ## Mapa de archivos
 
@@ -23,13 +23,17 @@ static/
       vendor.css              Solo importa FontAwesome en la capa `vendor`
       boxui/boxui.min.css     BoxUI núcleo (copiado de ui.box.hn, no se edita)
       boxui-public/boxui-public.min.css   Módulo landing (copiado, no se edita)
-      wspbox.css              ÚNICA hoja propia: tokens de marca + clases .wsp-*
+      wspbox.css              Tema: tokens de marca + clases .wsp-* de landing y login
+      wsp-dashboard.css       Estilos del panel: rejilla, barra, tarjeta de instancia, multiselect
+      wsp-historial.css       Estilos del visor de historial (con tokens)
     js/
       box-ui.js               Comportamiento de BoxUI (tema, modales, toasts)
       box-nav.js              Navbar y drawer móvil de la landing
       box-motion.js           Reveal/stagger (copiado; la landing no lo usa)
-      wsp-dialog.js           Modales del login sobre <dialog> (ver "Modales del login")
+      wsp-dialog.js           Modales sobre <dialog> (ver "Modales del login")
+      wsp-compat.js           Puente jQuery -> BoxUI del dashboard (ver "Dashboard")
     lib/fontawesome/          Iconos locales (sin CDN)
+    lib/jquery/jquery.min.js  jQuery 3.7.1, copia local (la usa el JS del dashboard)
 docs/diseno-ui.md             Este archivo
 ```
 
@@ -103,8 +107,47 @@ Cómo probar el login en local: compilar `go build -o wuzapi.exe .`, ejecutarlo 
 vacía, crear un usuario con `POST /admin/users` y abrir `/login/?token=<token>`. El
 servidor genera un QR real; la sesión de WhatsApp no se completa sin escanearlo.
 
-## Pendiente: dashboard
+## Dashboard
 
-`static/dashboard/` (y `history.html`) siguen con Fomantic UI y jQuery desde CDN, con
-unas 4.800 líneas de JS acopladas a esas librerías. Es una fase aparte: exige el mismo
-reemplazo de modales, dropdowns y demás componentes, y probarlo función por función.
+Estructura: `static/dashboard/index.html` (panel) y `history.html` (visor de historial), con la
+lógica en `js/app.js`, `js/groups.js` y `js/proxypool.js`. Antes usaban Fomantic UI desde CDN.
+
+**Decisión:** la lógica (≈4.800 líneas con jQuery) no se reescribió. Cambió solo lo visual:
+
+1. **HTML y plantillas del JS** pasaron de clases de Fomantic a BoxUI (`ui modal` -> `<dialog>`,
+   `ui button` -> `box-btn`, `ui message` -> `box-alert`, iconos `x icon` -> `fas fa-x`, etc.). Se
+   conservaron los ids y las clases de gancho que usa el JS: `hidden`, `widget`, `maingrid`,
+   `admingrid`, `logingrid`, `adminlogin`, `no-hover`, y `positive`/`negative`/`cancel` en los botones
+   de los modales.
+2. **`assets/js/wsp-compat.js`** implementa sobre BoxUI los métodos de Fomantic que el código usa:
+   `$.toast`, `.modal()`, `.dropdown()`, `.checkbox()` y `.form()` (validación: `empty`,
+   `integer[a..b]`, `regExp[...]`, `url`). Un método nuevo se añade ahí; no hace falta tocar `app.js`.
+3. **Selectores múltiples:** los de eventos son `<select multiple>` nativos (`.wsp-dropdown`); los de
+   participantes de grupos son un `.wsp-multiselect` propio, con búsqueda y alta libre de números.
+4. **`css/app.css` se retiró** (era de Fomantic y llevaba colores fijos). Los estados que el JS alterna
+   por clase (`hidden`, `loading`, `disabled`, `show`, `info`/`success`/`error`) están en
+   `wsp-dashboard.css`. `.hidden` va al final de ese archivo a propósito.
+
+Orden de carga de scripts: jQuery, `box-ui.js`, `wsp-dialog.js`, `wsp-compat.js` y luego los de la página.
+
+### Cómo depurar
+
+- Un modal no abre: el elemento debe tener `id` (el puente abre por id con `wspDialog`).
+- El botón del pie no dispara `onApprove`: debe estar dentro de `<footer>` y llevar `positive`,
+  `approve` u `ok` (cancelar: `negative`, `deny` o `cancel`).
+- Una celda de tabla corta sus botones con "…": BoxUI recorta las celdas; la de acciones ya está exenta
+  en `wsp-dashboard.css`.
+- Probar en local: ver "Cómo probar el login en local". El panel de administración entra con el token de
+  administrador (botón Admin Login) y la vista de usuario con el token del usuario.
+
+### Pendiente y limitaciones conocidas
+
+- **Textos en inglés:** el panel y el historial conservan sus textos originales; falta traducirlos a
+  español como la landing y el login.
+- Las etiquetas de color de las tarjetas de acción ("Config", "User"...) se omitieron: el divisor de
+  cada grupo ya da ese contexto.
+- La validación del formulario "Add Instance" muestra el primer error como aviso; Fomantic marcaba cada
+  campo.
+- `history.html`: se verificó que carga y ejecuta el flujo de acceso, pero no la vista de mensajes
+  (requiere una instancia con historial activado y datos).
+- jQuery sigue siendo una dependencia del panel; eliminarla exigiría reescribir su lógica.

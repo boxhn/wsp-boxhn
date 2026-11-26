@@ -91,23 +91,21 @@ function renderProxyPool() {
         <td>${escapeHtml(entry.label || '-')}</td>
         <td style="word-break: break-all;"><code>${escapeHtml(entry.proxy_url)}</code></td>
         <td style="min-width: 140px;">
-          <div class="ui tiny ${full ? 'orange' : 'teal'} progress" data-percent="${percent}" style="margin: 0 0 0.3em 0;">
-            <div class="bar" style="width: ${percent}%; min-width: 0;"></div>
-          </div>
+          <div class="box-progress"><span style="--_v:${percent}%"></span></div>
           ${entry.assigned_count} / ${entry.max_devices}${full ? ' (full)' : ''}
         </td>
         <td>
-          <div class="ui ${entry.enabled ? 'green' : 'grey'} horizontal label">${entry.enabled ? 'Enabled' : 'Disabled'}</div>
+          <div class="box-badge ${entry.enabled ? 'box-badge-success' : ''}">${entry.enabled ? 'Enabled' : 'Disabled'}</div>
         </td>
         <td>
-          <button class="ui primary button dashboard-button" onclick="openProxyPoolModal('${entry.id}')">
-            <i class="edit icon"></i> Edit
+          <button class="box-btn dashboard-button" onclick="openProxyPoolModal('${entry.id}')">
+            <i class="fas fa-pen-to-square"></i> Edit
           </button>
-          <button class="ui ${entry.enabled ? 'grey' : 'green'} button dashboard-button" onclick="toggleProxyPoolEntry('${entry.id}')">
-            <i class="${entry.enabled ? 'pause' : 'play'} icon"></i> ${entry.enabled ? 'Disable' : 'Enable'}
+          <button class="box-btn ${entry.enabled ? 'secondary' : ''} dashboard-button" onclick="toggleProxyPoolEntry('${entry.id}')">
+            <i class="fas ${entry.enabled ? 'fa-pause' : 'fa-play'}"></i> ${entry.enabled ? 'Disable' : 'Enable'}
           </button>
-          <button class="ui negative button dashboard-button" onclick="confirmDeleteProxyPoolEntry('${entry.id}')" ${entry.assigned_count > 0 ? 'disabled title="Release the assigned instances first"' : ''}>
-            <i class="trash alternate icon"></i> Delete
+          <button class="box-btn box-btn-danger negative dashboard-button" onclick="confirmDeleteProxyPoolEntry('${entry.id}')" ${entry.assigned_count > 0 ? 'disabled title="Release the assigned instances first"' : ''}>
+            <i class="fas fa-trash-can"></i> Delete
           </button>
         </td>
       </tr>
@@ -242,10 +240,10 @@ async function releaseProxyPool(userId) {
 function instanceProxyLabel(instance) {
   if (instance.proxy_pool_id) {
     const name = proxyPoolEntryName(instance.proxy_pool_id);
-    return `<div class="ui teal horizontal label" title="Assigned from the proxy pool"><i class="sitemap icon"></i><span class="proxy-pool-name" data-proxy-pool-id="${instance.proxy_pool_id}">${escapeHtml(name)}</span></div>`;
+    return `<div class="box-badge box-badge-primary" title="Assigned from the proxy pool"><i class="fas fa-sitemap"></i><span class="proxy-pool-name" data-proxy-pool-id="${instance.proxy_pool_id}">${escapeHtml(name)}</span></div>`;
   }
   if (instance.proxy_config && instance.proxy_config.enabled) {
-    return '<div class="ui blue horizontal label" title="Proxy set on the instance">Custom</div>';
+    return '<div class="box-badge box-badge-primary" title="Proxy set on the instance">Custom</div>';
   }
   return '<span style="color: #888;">None</span>';
 }
