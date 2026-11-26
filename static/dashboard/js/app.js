@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const loginForm = document.getElementById('loginForm');
   const loginTokenInput = document.getElementById('loginToken');
-  const regularLoginBtn = document.getElementById('regularLoginBtn');
-  const adminLoginBtn = document.getElementById('loginAsAdminBtn');
+  const loginCard = document.getElementById('loginCard');
+  const modeUserBtn = document.getElementById('loginModeUser');
+  const modeAdminBtn = document.getElementById('loginModeAdmin');
  
   hideWidgets();
 
@@ -118,32 +119,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Handle admin login button click
-  adminLoginBtn.addEventListener('click', function() {
-    isAdminLogin = true;
-    loginForm.classList.add('loading');
-    
-    // Change button appearance to show admin mode
-    adminLoginBtn.classList.add('teal');
-    adminLoginBtn.innerHTML = '<i class="fas fa-shield-halved"></i> Modo administrador';
-    $('#loginToken').val('').focus();
-    
-    // Show admin-specific instructions
-    $('.logingrid .box-alert').html(`
-        <div class="header mb-4">
-            <i class="fas fa-user-shield"></i>
-            Acceso de administrador
-        </div>
-        <p>Ingresa tus credenciales de administrador:</p>
-        <ul>
-            <li>Usa el token de administrador en el campo de arriba</li>
-        </ul>
-    `);
-    
-    // Focus on token input
+  // Selector de tipo de acceso. Cambia el modo, los textos y el color de la tarjeta para que
+  // siempre se vea con qué rol se va a entrar. isAdminLogin decide qué token se valida al enviar.
+  const textosModo = {
+    usuario: {
+      etiqueta: 'Token de usuario',
+      placeholder: 'Pega aquí tu token de usuario',
+      ayuda: 'Es el token de tu instancia. Con él ves y administras solo esa instancia.',
+      boton: 'Entrar como usuario'
+    },
+    admin: {
+      etiqueta: 'Token de administrador',
+      placeholder: 'Pega aquí el token de administrador',
+      ayuda: 'Es el token global del servidor (WUZAPI_ADMIN_TOKEN). Da acceso a todas las instancias y a crear o borrar usuarios.',
+      boton: 'Entrar como administrador'
+    }
+  };
+
+  function setLoginMode(admin) {
+    isAdminLogin = admin;
+    const t = admin ? textosModo.admin : textosModo.usuario;
+    loginCard.dataset.modo = admin ? 'admin' : 'usuario';
+    modeUserBtn.classList.toggle('activo', !admin);
+    modeAdminBtn.classList.toggle('activo', admin);
+    modeUserBtn.setAttribute('aria-checked', String(!admin));
+    modeAdminBtn.setAttribute('aria-checked', String(admin));
+    document.getElementById('loginTokenLabel').textContent = t.etiqueta;
+    loginTokenInput.placeholder = t.placeholder;
+    document.getElementById('loginHelp').textContent = t.ayuda;
+    document.getElementById('loginSubmitText').textContent = t.boton;
+    loginTokenInput.value = ''; // el token de un rol no sirve para el otro
     loginTokenInput.focus();
-    loginForm.classList.remove('loading');
-  });
+  }
+  modeUserBtn.addEventListener('click', function() { setLoginMode(false); });
+  modeAdminBtn.addEventListener('click', function() { setLoginMode(true); });
 
   // Handle form submission
   loginForm.addEventListener('submit', function(e) {
@@ -152,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = loginTokenInput.value.trim();
     
     if (!token) {
-        showError('Ingresa tu token de acceso');
+        showError(isAdminLogin ? 'Ingresa el token de administrador' : 'Ingresa tu token de usuario');
         $('#loginToken').focus();
         return;
     }

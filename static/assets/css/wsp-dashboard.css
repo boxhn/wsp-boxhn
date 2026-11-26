@@ -77,8 +77,34 @@
 
 /* ---------- login ---------- */
 .logingrid { justify-content: center; align-items: center; min-height: 80vh; }
-.logingrid > .wsp-col { flex: 0 1 38rem; }
-.wsp-instancia.login { padding: 1.5rem; }
+.logingrid > .wsp-col { flex: 0 1 34rem; min-width: 0; }
+.wsp-instancia.login { padding: 1.5rem; width: 100%; border-top: 4px solid var(--box-brand-500); }
+.wsp-instancia.login[data-modo="admin"] { border-top-color: var(--box-danger-solid); }
+
+/* Selector Usuario / Administrador del login: dos tarjetas, una activa */
+.wsp-modos { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.25rem; }
+.wsp-modo {
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  height: auto; min-height: 4.5rem; line-height: 1.3; justify-content: center;
+  padding: .85rem .5rem; cursor: pointer; font: inherit; color: var(--box-text-muted);
+  background: var(--box-surface); border: 2px solid var(--box-border); border-radius: var(--box-radius);
+}
+.wsp-modo i { font-size: 1.25rem; }
+.wsp-modo span { font-weight: 600; color: var(--box-text); }
+.wsp-modo small { font-size: .75rem; }
+.wsp-modo:hover { background: var(--box-surface-hover); }
+.wsp-modo:focus-visible { outline: 2px solid var(--box-brand-500); outline-offset: 2px; }
+.wsp-modo.activo { border-color: var(--box-brand-500); background: var(--box-brand-50); }
+.wsp-modo.activo i { color: var(--box-brand-500); }
+#loginModeAdmin.activo { border-color: var(--box-danger-solid); background: var(--box-red-100); }
+#loginModeAdmin.activo i { color: var(--box-danger-solid); }
+.wsp-entrar { width: 100%; justify-content: center; }
+[data-modo="admin"] .wsp-entrar { background: var(--box-danger-solid); border-color: var(--box-danger-solid); color: #fff; }
+@media (max-width: 480px) {
+  .logingrid { min-height: 0; align-items: flex-start; padding: 1rem .75rem 0; }
+  .wsp-instancia.login { padding: 1rem; }
+  .wsp-modo small { display: none; }
+}
 .logingrid .center.aligned { text-align: center; }
 .bi-whatsapp { font-size: 2.5rem; color: var(--box-brand-500); }
 

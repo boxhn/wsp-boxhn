@@ -40,40 +40,37 @@
   <!-- Login -->
   <div class="wsp-grid logingrid hidden">
     <div class="wsp-col">
-      <div class="wsp-instancia centered login" style="width:600px;">
+      <div class="wsp-instancia centered login" id="loginCard" data-modo="usuario">
         <div class="content">
           <div class="center aligned mb-4">
-            <i class="fab fa-whatsapp bi-whatsapp"></i> 
-            <h2>Administrador de WspBox</h2>
-            <p class="text-muted">Inicia sesión para acceder al panel</p>
+            <i class="fab fa-whatsapp bi-whatsapp"></i>
+            <h2>WspBox</h2>
+            <p class="text-muted">¿Cómo quieres entrar?</p>
+          </div>
+          <div class="wsp-modos" role="radiogroup" aria-label="Tipo de acceso">
+            <button type="button" class="wsp-modo activo" id="loginModeUser" role="radio" aria-checked="true">
+              <i class="fas fa-user"></i>
+              <span>Usuario</span>
+              <small>Una sola instancia</small>
+            </button>
+            <button type="button" class="wsp-modo" id="loginModeAdmin" role="radio" aria-checked="false">
+              <i class="fas fa-shield-halved"></i>
+              <span>Administrador</span>
+              <small>Todas las instancias</small>
+            </button>
           </div>
           <form id="loginForm" class="mb-4">
             <div class="box-field mb-4" style="text-align:left;">
-              <label for="loginToken">Token de acceso</label>
-              <input type="text" id="loginToken" placeholder="Escribe tu token de acceso">
-              <div class="box-muted">
-                  Token que autentica tus solicitudes a la API.
+              <label for="loginToken" id="loginTokenLabel">Token de usuario</label>
+              <input type="password" id="loginToken" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Pega aquí tu token de usuario">
+              <div class="box-muted" id="loginHelp">
+                Es el token de tu instancia. Con él ves y administras solo esa instancia.
               </div>
             </div>
-            <div class="box-btn-group wsp-ancho">
-              <button type="submit" class="box-btn" id="regularLoginBtn">
-                <i class="fas fa-right-to-bracket"></i>Iniciar sesión
-              </button>
-              
-              <button type="button" class="box-btn" id="loginAsAdminBtn">
-                <i class="fas fa-shield-halved"></i>Acceso de administrador
-              </button>
-            </div>
+            <button type="submit" class="box-btn wsp-entrar" id="loginSubmit">
+              <i class="fas fa-right-to-bracket"></i><span id="loginSubmitText">Entrar como usuario</span>
+            </button>
           </form>
-          <div class="box-alert" style="text-align:left;">
-            <strong class="wsp-titulo-alerta">
-              <i class="fas fa-user"></i> Acceso de usuario
-            </strong>
-            <p>Ingresa tus credenciales de usuario:</p>
-            <ul>
-              <li>Usa el token de tu usuario en el campo de arriba</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

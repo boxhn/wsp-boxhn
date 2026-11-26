@@ -161,3 +161,7 @@ Widget del panel que abre el modal `#modalClientAccess`: crea el token de client
 Lógica en `js/clientaccess.js` (carga después de `app.js`); el botón Guardar no lleva la clase `positive`
 para que `wsp-dialog.js` no cierre el modal antes de recibir la respuesta. El cliente web (`webclient/`) lee
 sus permisos con `GET /session/client-access` y oculta lo no permitido. Detalle y API: [client-access.md](client-access.md).
+
+### Login del panel (selector de rol)
+
+El login del dashboard (`#loginCard` en `dashboard/index.html`) ya no tiene dos botones ambiguos: un selector de dos tarjetas (**Usuario** / **Administrador**, `#loginModeUser`/`#loginModeAdmin`, `role=radio`) y un solo botón de entrada cuyo texto cambia ("Entrar como usuario/administrador"). La tarjeta lleva `data-modo="usuario|admin"`: borde y botón verdes o rojos según el rol, y etiqueta, ayuda y placeholder cambian. La lógica es `setLoginMode()` en `js/app.js` (fija `isAdminLogin`, que decide si se valida el token de usuario o el de administrador) y los estilos `.wsp-modos`/`.wsp-modo` en `wsp-dashboard.css`. Al cambiar de modo se vacía el campo, porque el token de un rol no sirve para el otro. Es responsivo: en móvil se ocultan los subtítulos de las tarjetas. El campo es `type="password"` para no mostrar el token en pantalla.
