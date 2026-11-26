@@ -52,6 +52,9 @@ var supportedEventTypes = []string{
 	"CallOfferNotice",
 	"CallRelayLatency",
 
+	// Cola de envío pausado (docs/send-queue.md)
+	"QueuedMessageStatus",
+
 	// Presence and Activity
 	"Presence",
 	"ChatPresence",

@@ -580,6 +580,9 @@ func main() {
 	// Start background cleanup of stale passkey pairing states (needed for both modes)
 	startPasskeyCleanup()
 
+	// Worker de la cola de envío pausado (docs/send-queue.md)
+	startSendQueueWorker(s)
+
 	if serverMode == Stdio {
 		startStdioMode(s)
 	} else {
@@ -621,6 +624,7 @@ func startHTTPMode(s *server) {
 					os.Exit(1)
 				}
 
+				shutdownSendQueue(ctx)
 				if err := shutdownMedia(ctx); err != nil {
 					log.Error().Err(err).Msg("Media shutdown did not finish")
 				}
@@ -660,6 +664,7 @@ func startStdioMode(s *server) {
 	err := stdioServer.Start()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	shutdownSendQueue(ctx)
 	if shutdownErr := shutdownMedia(ctx); shutdownErr != nil {
 		log.Error().Err(shutdownErr).Msg("Media shutdown did not finish")
 	}

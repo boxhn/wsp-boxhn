@@ -116,7 +116,40 @@ var migrations = []Migration{
 		Name:  "message_sent_at_timezone",
 		UpSQL: `ALTER TABLE message_history ALTER COLUMN sent_at TYPE TIMESTAMPTZ USING sent_at AT TIME ZONE 'UTC';`,
 	},
+	{
+		// Cola de envío pausado (ver docs/send-queue.md). SQL portable entre
+		// SQLite y PostgreSQL: fechas como segundos Unix (BIGINT) y flags como INTEGER.
+		ID:    18,
+		Name:  "add_send_queue",
+		UpSQL: addSendQueueSQL,
+	},
 }
+
+const addSendQueueSQL = `
+CREATE TABLE IF NOT EXISTS send_queue_config (
+	user_id TEXT PRIMARY KEY,
+	enabled INTEGER NOT NULL DEFAULT 0,
+	paused INTEGER NOT NULL DEFAULT 0,
+	batch_size INTEGER NOT NULL DEFAULT 3,
+	msg_delay_min INTEGER NOT NULL DEFAULT 5,
+	msg_delay_max INTEGER NOT NULL DEFAULT 15,
+	batch_pause_min INTEGER NOT NULL DEFAULT 60,
+	batch_pause_max INTEGER NOT NULL DEFAULT 180,
+	hourly_cap INTEGER NOT NULL DEFAULT 60
+);
+CREATE TABLE IF NOT EXISTS send_queue (
+	id TEXT PRIMARY KEY,
+	user_id TEXT NOT NULL,
+	path TEXT NOT NULL,
+	body TEXT NOT NULL,
+	status TEXT NOT NULL DEFAULT 'pending',
+	attempts INTEGER NOT NULL DEFAULT 0,
+	message_id TEXT NOT NULL DEFAULT '',
+	result TEXT NOT NULL DEFAULT '',
+	created_at BIGINT NOT NULL,
+	sent_at BIGINT NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_send_queue_user_status ON send_queue (user_id, status, id);`
 
 const addProxyPoolSQL = `
 -- PostgreSQL version

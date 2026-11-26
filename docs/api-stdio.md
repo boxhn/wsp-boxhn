@@ -49,6 +49,9 @@ La ruta HTTP enlaza con la referencia del mismo endpoint en [api/](api/README.md
 | `session.hmac.config` | POST | `/session/hmac/config` |
 | `session.hmac.config.get` | GET | `/session/hmac/config` |
 | `session.hmac.config.delete` | DELETE | `/session/hmac/config` |
+| `session.sendqueue.config` | POST | `/session/sendqueue/config` |
+| `session.sendqueue.config.get` | GET | `/session/sendqueue/config` |
+| `chat.queue.list` | GET | `/chat/queue` |
 | `chat.send.raw` | POST | `/chat/send/raw` |
 | `chat.send.text` | POST | `/chat/send/text` |
 | `chat.send.image` | POST | `/chat/send/image` |
