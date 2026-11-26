@@ -1316,11 +1316,15 @@ p {
   z-index: 20;
   padding: 20px;
 }
+/* <dialog> abierto con showModal() va en la capa superior del navegador: no lo
+   centra el flex de .modal-backdrop. Se centra solo con fixed + inset 0 + margin auto. */
 .modal {
-  position: relative;
-  margin: 0;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
   width: 420px;
-  max-width: 100%;
+  max-width: calc(100% - 40px);
   max-height: 90dvh;
   overflow: auto;
   border: 1px solid #e6ecdf;
