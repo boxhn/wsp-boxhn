@@ -21,6 +21,9 @@
    Depende de: jQuery (assets/lib/jquery), box-ui.js (boxToast) y
      wsp-dialog.js. Orden de carga: jquery, box-ui, wsp-dialog,
      wsp-compat y después los scripts de la página.
+   Además: pone data-label (texto de la cabecera) a cada celda de las tablas
+     .box-fields-table, también a las filas que el JS añade después; el CSS lo
+     usa para mostrar cada fila como tarjeta en pantallas estrechas.
    Limitaciones conocidas: la validación muestra el primer error
      como toast (Fomantic marcaba cada campo); el multiselect con
      búsqueda es propio y más simple que el de Fomantic.
@@ -339,3 +342,31 @@
         });
     };
 })(jQuery);
+
+/* Etiquetas de columna para tablas responsivas (ver wsp-dashboard.css, "tablas").
+   Las filas se rellenan por JS en cualquier momento, por eso se vigila el <tbody>. */
+(function () {
+    'use strict';
+    function etiquetar(tabla) {
+        var cabeceras = Array.prototype.map.call(tabla.querySelectorAll('thead th'), function (th) {
+            return th.textContent.trim();
+        });
+        Array.prototype.forEach.call(tabla.querySelectorAll('tbody tr'), function (tr) {
+            Array.prototype.forEach.call(tr.children, function (td, i) {
+                // Las filas de aviso ("No hay instancias") usan colspan y no llevan etiqueta.
+                if (!td.hasAttribute('colspan') && cabeceras[i] && td.getAttribute('data-label') !== cabeceras[i]) {
+                    td.setAttribute('data-label', cabeceras[i]);
+                }
+            });
+        });
+    }
+    function vigilar() {
+        Array.prototype.forEach.call(document.querySelectorAll('table.box-fields-table'), function (tabla) {
+            etiquetar(tabla);
+            // Solo childList: poner atributos no vuelve a disparar el observador.
+            new MutationObserver(function () { etiquetar(tabla); }).observe(tabla, { childList: true, subtree: true });
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', vigilar);
+    else vigilar();
+})();

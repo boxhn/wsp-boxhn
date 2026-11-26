@@ -118,7 +118,7 @@
     body.textContent = '';
     if (!items.length) {
       var tr = document.createElement('tr');
-      var td = cell('No messages');
+      var td = cell('No hay mensajes');
       td.colSpan = 6;
       tr.appendChild(td);
       body.appendChild(tr);

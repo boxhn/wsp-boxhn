@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="/assets/css/vendor.css">
   <link rel="stylesheet" href="/assets/css/boxui/boxui.min.css">
   <link rel="stylesheet" href="/assets/css/wspbox.css">
-  <link rel="stylesheet" href="/assets/css/wsp-dashboard.css?v=login-modos-1">
+  <link rel="stylesheet" href="/assets/css/wsp-dashboard.css?v=panel-resp-1">
 </head>
 <body>
 
@@ -76,26 +76,27 @@
     </div>
   </div>
 
-  <!-- Header Menu -->
+  <!-- Barra superior: título corto, rol, documentación y salir. En móvil solo iconos. -->
   <div class="wsp-barra menu-header maingrid admingrid hidden">
     <div class="wsp-contenedor">
-      <a href="#" class="header item">
-        <span class="title-container">
-          <i class="fab fa-whatsapp"></i> Administrador de WspBox
-        </span>
+      <a href="#" class="header item" aria-label="WspBox">
+        <i class="fab fa-whatsapp"></i> <span class="wsp-barra-titulo">WspBox</span>
       </a>
       <div class="right menu">
         <div class="item" id="user-role-indicator">
           <i class="fas fa-user"></i>
           <span id="user-role-text">...</span>
         </div>
-        <div class="item">
-          <a href="#" id="menulogout">Cerrar sesión</a></div>
-        </div>
+        <a class="box-btn secondary wsp-barra-btn" href="/api" target="_blank" rel="noopener" title="Documentación de la API" aria-label="Documentación de la API">
+          <i class="fas fa-book"></i><span class="wsp-barra-texto">Documentación</span>
+        </a>
+        <a class="box-btn secondary wsp-barra-btn" href="#" id="menulogout" title="Cerrar sesión" aria-label="Cerrar sesión">
+          <i class="fas fa-right-from-bracket"></i><span class="wsp-barra-texto">Salir</span>
+        </a>
       </div>
     </div>
-  </body></html>
-  
+  </div>
+
   <div style="height:70px;">&nbsp;</div> <!-- top margin/spacer for header -->
 
   <!-- Instances Table -->
@@ -1624,11 +1625,11 @@
   <script src="/assets/lib/jquery/jquery.min.js"></script>
   <script src="/assets/js/box-ui.js"></script>
   <script src="/assets/js/wsp-dialog.js?v=login-modos-1"></script>
-  <script src="/assets/js/wsp-compat.js?v=login-modos-1"></script>
+  <script src="/assets/js/wsp-compat.js?v=panel-resp-1"></script>
   <script src="js/app.js?v=login-modos-1"></script>
   <script src="js/groups.js?v=login-modos-1"></script>
   <script src="js/proxypool.js?v=proxy-pool-4"></script>
-  <script src="js/sendqueue.js?v=send-queue-1"></script>
+  <script src="js/sendqueue.js?v=panel-resp-1"></script>
   <script src="js/clientaccess.js?v=client-access-1"></script>
 
 </body>

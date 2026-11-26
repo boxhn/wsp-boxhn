@@ -169,3 +169,9 @@ El login del dashboard (`#loginCard` en `dashboard/index.html`) ya no tiene dos 
 ### Caché del navegador (importante al desplegar)
 
 Los scripts y el CSS del panel se cargan con `?v=...` (por ejemplo `js/app.js?v=login-modos-1`). **Si cambias uno de esos archivos, cambia también su `?v=` en `dashboard/index.html`**; si no, el navegador mezcla un HTML nuevo con un JS viejo y el panel deja de arrancar (sin login, sin cerrar sesión). Síntoma típico: la consola muestra `Cannot read properties of null` en `app.js`. Solución inmediata para quien ya lo tiene roto: Ctrl+F5.
+
+### Barra superior y tablas responsivas
+
+- **Barra superior** (`.wsp-barra` en `dashboard/index.html`): título corto "WspBox" (el rol ya se ve en la insignia ADMIN/USER), botón **Documentación** (abre `/api`, la referencia Swagger) y **Salir** (`#menulogout`). Bajo 640 px solo se ven los iconos; llevan `title` y `aria-label`.
+- **Tablas** (`.box-fields-table`): cabecera con fondo y borde. Bajo 768 px cada fila se muestra como tarjeta "Columna: valor". El texto de cada columna lo toma `wsp-compat.js` de la cabecera y lo pone en `data-label` de las celdas, incluidas las filas que el JS añade después (vigila el `<tbody>`). Una tabla nueva solo necesita la clase `box-fields-table` y su `<thead>`; las filas de aviso con `colspan` no llevan etiqueta. La última celda se trata como la de acciones.
+- Al cambiar CSS o JS de esta página, sube su `?v=` en el HTML (ver "Caché del navegador").
